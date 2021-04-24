@@ -1,8 +1,10 @@
 package smtp
 
-import "log"
+import (
+	"github.com/sirupsen/logrus"
+)
 
 type Handler interface {
-	validateRctp() bool
-	handle(logger log.Logger) bool
+	ValidateRcpt(e *Envelope, logger *logrus.Logger) error
+	Handle(e *Envelope, logger *logrus.Logger) Result
 }
