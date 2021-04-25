@@ -5,5 +5,4 @@ with slight modifications here and there to better accommodate Chameleons needs.
 Thank you to those who have worked so hard to make go-guerrilla possible!
 
 ## Todos
-- Wrap `logrus.Logger` with a `ChameleonLogger`
 - Review [go-guerrilla workers and processors](https://github.com/flashmob/go-guerrilla/wiki/Backends,-configuring-and-extending) for thread safety
