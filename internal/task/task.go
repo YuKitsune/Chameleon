@@ -2,20 +2,20 @@ package task
 
 import (
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
+	"github.com/yukitsune/chameleon/internal/log"
 )
 
 type Task struct {
 	id string
-	logger *logrus.Entry
-	fn func(logger *logrus.Entry)
+	logger log.ChameleonLogger
+	fn func(logger log.ChameleonLogger)
 }
 
-func NewTask(logger *logrus.Logger) *Task {
+func NewTask(logger log.ChameleonLogger) *Task {
 	id := uuid.New().String()
 	task := &Task{
 		id: id,
-		logger: logger.WithFields(logrus.Fields{
+		logger: logger.WithFields(log.Fields{
 			"taskId": id,
 		}),
 	}

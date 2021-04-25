@@ -1,10 +1,10 @@
 package smtp
 
 import (
-	"github.com/sirupsen/logrus"
+	"github.com/yukitsune/chameleon/internal/log"
 )
 
 type Handler interface {
-	ValidateRcpt(e *Envelope, logger *logrus.Logger) error
-	Handle(e *Envelope, logger *logrus.Logger) Result
+	ValidateRcpt(e *Envelope, logger log.ChameleonLogger) error
+	Handle(e *Envelope, logger log.ChameleonLogger) Result
 }

@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/internal/rfc5321"
 	"net"
 	"net/mail"
@@ -50,12 +50,12 @@ type client struct {
 	ar         *adjustableLimitedReader
 	// guards access to conn
 	connGuard sync.Mutex
-	log       *logrus.Logger
+	log       log.ChameleonLogger
 	parser    rfc5321.Parser
 }
 
 // NewClient allocates a new client.
-func NewClient(conn net.Conn, clientID uint64, logger *logrus.Logger, envelope *EnvelopePool) *client {
+func NewClient(conn net.Conn, clientID uint64, logger log.ChameleonLogger, envelope *EnvelopePool) *client {
 	c := &client{
 		conn: conn,
 		// Envelope will be borrowed from the envelope pool

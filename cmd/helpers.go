@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"github.com/yukitsune/chameleon/internal/log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 )
 
-func SigHandler(log *logrus.Logger) {
+func SigHandler(log log.ChameleonLogger) {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
 		syscall.SIGTERM,
@@ -36,4 +37,9 @@ func SigHandler(log *logrus.Logger) {
 			return
 		}
 	}
+}
+
+func ExitFromError(err error){
+	fmt.Println(err.Error())
+	panic(err)
 }

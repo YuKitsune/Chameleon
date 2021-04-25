@@ -6,8 +6,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon"
+	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/internal/rfc5321"
 	"io"
 	"io/ioutil"
@@ -49,7 +49,7 @@ type Server struct {
 	hosts           allowedHosts // stores map[string]bool for faster lookup
 	state           int
 	// If log changed after a config reload, newLogStore stores the value here until it's safe to change it
-	log				*logrus.Logger
+	log				log.ChameleonLogger
 	handler		 	Handler
 	envelopePool 	*EnvelopePool
 }
@@ -82,7 +82,7 @@ func (c command) match(in []byte) bool {
 }
 
 // Creates and returns a new ready-to-run Server from a ServerConfig configuration
-func NewServer(sc *ServerConfig, handler Handler, log *logrus.Logger) (*Server, error) {
+func NewServer(sc *ServerConfig, handler Handler, log log.ChameleonLogger) (*Server, error) {
 	server := &Server{
 		config:  sc,
 		clientPool:      NewPool(sc.MaxClients),
@@ -396,7 +396,7 @@ func (s *Server) handleClient(client *client) {
 				if h, err := client.parser.Helo(input[4:]); err == nil {
 					client.Helo = h
 				} else {
-					s.log.WithFields(logrus.Fields{"helo": h, "client": client.ID}).Warn("invalid helo")
+					s.log.WithFields(log.Fields{"helo": h, "client": client.ID}).Warn("invalid helo")
 					client.sendResponse(r.FailSyntaxError)
 					break
 				}
@@ -408,7 +408,7 @@ func (s *Server) handleClient(client *client) {
 					client.Helo = h
 				} else {
 					client.sendResponse(r.FailSyntaxError)
-					s.log.WithFields(logrus.Fields{"ehlo": h, "client": client.ID}).Warn("invalid ehlo")
+					s.log.WithFields(log.Fields{"ehlo": h, "client": client.ID}).Warn("invalid ehlo")
 					client.sendResponse(r.FailSyntaxError)
 					break
 				}
@@ -601,7 +601,7 @@ func (s *Server) defaultHost(a *Address) {
 		a.Host = sc.Hostname
 		if !s.allowsHost(a.Host) {
 			s.log.WithFields(
-				logrus.Fields{"hostname": sc.Hostname}).
+				log.Fields{"hostname": sc.Hostname}).
 				Warn("the hostname is not present in AllowedHosts config setting")
 		}
 	}
