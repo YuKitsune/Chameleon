@@ -14,7 +14,7 @@ func (d DefaultHandler) ValidateRcpt(e *smtp.Envelope, logger log.ChameleonLogge
 
 	// Todo: Check each recipient and ensure at least one of them is valid
 	sender := e.MailFrom.String()
-	recipient := e.RcptTo[len(e.RcptTo) - 1].String()
+	recipient := e.RcptTo[len(e.RcptTo)-1].String()
 
 	return d.client.Validate(sender, recipient)
 

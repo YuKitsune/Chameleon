@@ -39,7 +39,7 @@ func SigHandler(log log.ChameleonLogger) {
 	}
 }
 
-func ExitFromError(err error){
+func ExitFromError(err error) {
 	fmt.Println(err.Error())
 	panic(err)
 }

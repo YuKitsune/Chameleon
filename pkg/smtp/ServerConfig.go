@@ -39,7 +39,6 @@ type ServerConfig struct {
 	XClientOn bool `json:"xclient_on,omitempty"`
 }
 
-
 // Loads in timestamps for the TLS keys
 func (sc *ServerConfig) loadTlsKeyTimestamps() error {
 	var statErr = func(iface string, err error) error {
@@ -90,7 +89,6 @@ func (sc *ServerConfig) Validate() error {
 
 	return nil
 }
-
 
 // Returns value changes between struct a & struct b.
 // Results are returned in a map, where each key is the name of the field that was different.

@@ -38,8 +38,8 @@ const (
 
 // Server listens for SMTP clients on the port specified in its config
 type Server struct {
-	config		    *ServerConfig // stores guerrilla.ServerConfig
-	tlsConfig		*tls.Config
+	config          *ServerConfig // stores guerrilla.ServerConfig
+	tlsConfig       *tls.Config
 	timeout         time.Duration // stores time.Duration
 	listenInterface string
 	clientPool      *Pool
@@ -49,9 +49,9 @@ type Server struct {
 	hosts           allowedHosts // stores map[string]bool for faster lookup
 	state           int
 	// If log changed after a config reload, newLogStore stores the value here until it's safe to change it
-	log				log.ChameleonLogger
-	handler		 	Handler
-	envelopePool 	*EnvelopePool
+	log          log.ChameleonLogger
+	handler      Handler
+	envelopePool *EnvelopePool
 }
 
 type allowedHosts struct {
@@ -84,7 +84,7 @@ func (c command) match(in []byte) bool {
 // Creates and returns a new ready-to-run Server from a ServerConfig configuration
 func NewServer(sc *ServerConfig, handler Handler, log log.ChameleonLogger) (*Server, error) {
 	server := &Server{
-		config:  sc,
+		config:          sc,
 		clientPool:      NewPool(sc.MaxClients),
 		closedListener:  make(chan bool, 1),
 		listenInterface: sc.ListenInterface,

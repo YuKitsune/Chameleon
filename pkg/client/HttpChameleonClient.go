@@ -15,9 +15,9 @@ import (
 )
 
 type HttpChameleonClient struct {
-	BaseURL *url.URL
+	BaseURL    *url.URL
 	httpClient http.Client
-	logger log.ChameleonLogger
+	logger     log.ChameleonLogger
 }
 
 func NewHttpChameleonClient(baseUrl *url.URL, logger log.ChameleonLogger) *HttpChameleonClient {
@@ -83,8 +83,8 @@ func (c *HttpChameleonClient) Handle(e *smtp.Envelope) error {
 func getValidateUrl(sender string, recipient string) *url.URL {
 	query := fmt.Sprintf("sender=%s&recipient=%s", sender, recipient)
 	url := &url.URL{
-		Path:        "/validate",
-		RawQuery:    query,
+		Path:     "/validate",
+		RawQuery: query,
 	}
 	return url
 }
@@ -110,7 +110,7 @@ func getValidateRequest(client *HttpChameleonClient, sender string, recipient st
 	return req, nil
 }
 
-func getHandleRequest(client *HttpChameleonClient, e *smtp.Envelope) (*http.Request, error){
+func getHandleRequest(client *HttpChameleonClient, e *smtp.Envelope) (*http.Request, error) {
 
 	// Read the raw data from the envelope
 	var rawData []byte
@@ -122,7 +122,7 @@ func getHandleRequest(client *HttpChameleonClient, e *smtp.Envelope) (*http.Requ
 
 	// Create the resource
 	resource := &resources.HandleRequestResource{
-		Recipient: e.RcptTo[len(e.RcptTo) - 1].String(),
+		Recipient: e.RcptTo[len(e.RcptTo)-1].String(),
 		RawData:   rawData,
 	}
 

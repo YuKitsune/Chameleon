@@ -4,5 +4,5 @@ package resources
 
 type HandleRequestResource struct {
 	Recipient string `json:"recipient"`
-	RawData []byte `json:"rawData"`
+	RawData   []byte `json:"rawData"`
 }

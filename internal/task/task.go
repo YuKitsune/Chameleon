@@ -6,9 +6,9 @@ import (
 )
 
 type Task struct {
-	id string
+	id     string
 	logger log.ChameleonLogger
-	fn func(logger log.ChameleonLogger)
+	fn     func(logger log.ChameleonLogger)
 }
 
 func NewTask(logger log.ChameleonLogger) *Task {
