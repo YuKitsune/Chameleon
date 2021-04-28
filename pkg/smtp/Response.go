@@ -2,6 +2,8 @@ package smtp
 
 import "fmt"
 
+// Todo: Update these to better line up with out usecase
+
 const (
 	// ClassSuccess specifies that the DSN is reporting a positive delivery
 	// action.  Detail sub-codes may provide notification of
