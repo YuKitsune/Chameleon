@@ -232,7 +232,6 @@ func (s *Server) Start(startWG *sync.WaitGroup) error {
 				s.log.WithError(borrowErr).Info("couldn't borrow a new client")
 				// we could not get a client, so close the connection.
 				_ = conn.Close()
-
 			}
 			// intentionally placed Borrow in args so that it's called in the
 			// same main goroutine.
