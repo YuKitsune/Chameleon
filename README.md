@@ -1,8 +1,8 @@
 > ⚠️ This is a work-in-progress, contributions are welcomed!
 
 
-# Chameleon Backend
-Chameleon is an email cloaking service written in Go, and React (Typescript).
+# Chameleon
+Chameleon is an email cloaking service written in Go, and React (TypeScript).
 
 # Contributing
 
