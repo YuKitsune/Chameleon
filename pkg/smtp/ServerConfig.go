@@ -14,9 +14,6 @@ import (
 type ServerConfig struct {
 	// TLS Configuration
 	TLS ServerTLSConfig `json:"tls,omitempty"`
-	// LogFile is where the logs go. Use path to file, or "stderr", "stdout" or "off".
-	// defaults to AppConfig.Log file setting
-	LogFile string `json:"log_file,omitempty"`
 	// Hostname will be used in the server's reply to HELO/EHLO. If TLS enabled
 	// make sure that the Hostname matches the cert. Defaults to os.Hostname()
 	// Hostname will also be used to fill the 'Host' property when the "RCPT TO" address is
@@ -32,8 +29,6 @@ type ServerConfig struct {
 	// MaxClients controls how many maximum clients we can handle at once.
 	// Defaults to defaultMaxClients
 	MaxClients int `json:"max_clients"`
-	// IsEnabled set to true to start the server, false will ignore it
-	IsEnabled bool `json:"is_enabled"`
 	// XClientOn when using a proxy such as Nginx, XCLIENT command is used to pass the
 	// original client's IP address & client's HELO
 	XClientOn bool `json:"xclient_on,omitempty"`

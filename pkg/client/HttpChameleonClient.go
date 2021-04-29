@@ -20,8 +20,8 @@ type HttpChameleonClient struct {
 	logger     log.ChameleonLogger
 }
 
-func NewHttpChameleonClient(baseUrl *url.URL, logger log.ChameleonLogger) *HttpChameleonClient {
-	return &HttpChameleonClient{
+func NewHttpChameleonClient(baseUrl *url.URL, logger log.ChameleonLogger) HttpChameleonClient {
+	return HttpChameleonClient{
 		BaseURL:    baseUrl,
 		httpClient: http.Client{},
 		logger:     logger,

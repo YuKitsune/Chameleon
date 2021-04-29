@@ -4,10 +4,18 @@ import (
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/client"
 	"github.com/yukitsune/chameleon/pkg/smtp"
+	"net/url"
 )
 
 type DefaultHandler struct {
 	client client.HttpChameleonClient
+}
+
+func NewDefaultHandler(baseApiUrl *url.URL, logger log.ChameleonLogger) *DefaultHandler {
+	chameleonClient := client.NewHttpChameleonClient(baseApiUrl, logger)
+	return &DefaultHandler{
+		client: chameleonClient,
+	}
 }
 
 func (d DefaultHandler) ValidateRcpt(e *smtp.Envelope, logger log.ChameleonLogger) error {
