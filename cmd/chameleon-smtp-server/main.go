@@ -25,5 +25,7 @@ func main() {
 		cmd.ExitFromError(err)
 	}
 
+	logger.Infoln("Hello, World!")
+
 	cmd.SigHandler(logger)
 }
