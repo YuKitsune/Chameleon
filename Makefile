@@ -23,35 +23,44 @@ DOCKER_BUILD_ARGS := \
 	--build-arg GIT_DIRTY="$(GIT_DIRTY)" \
 	--build-arg VERSION="$(VERSION)" \
 
-# Builds all programs and places their binaries in the bin directory
-build-all:
+.DEFAULT_GOAL := help
+
+.PHONY: help
+help: ## Shows this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: build
+build: ## Builds all programs and places their binaries in the bin/ directory
 	mkdir -p bin
 	go build -ldflags="$(LD_FLAGS)" -o ./bin/  ./cmd/...
 
-# Removes the bin directory
-clean-all:
+.PHONY: clean
+clean: ## Removes the bin/ directory
 	rm -rf bin
 
-# Builds the docker container for the SMTP server
-build-smtp-container:
+.PHONY: build-containers
+build-containers: build-smtp-container build-api-container ## Builds a docker container for all programs
+
+.PHONY: build-smtp-container
+build-smtp-container: ## Builds the docker container for the SMTP server
 	docker build \
 		-t chameleon-smtp-server \
 		-f build/package/chameleon-smtp-server/Dockerfile \
 		$(DOCKER_BUILD_ARGS) \
 		.
 
-# Builds the docker container for the REST API server
-build-api-container:
+.PHONY: build-api-container
+build-api-container: ## Builds the docker container for the REST API server
 	docker build \
 		-t chameleon-api-server \
 		-f build/package/chameleon-api-server/Dockerfile \
 		$(DOCKER_BUILD_ARGS) \
 		.
 
-# Runs docker compose
-compose:
+.PHONY: compose
+compose: ## Runs docker compose
 	docker compose -f ./deployments/docker-compose.yml up
 
-# Rebuilds the containers and forces a recreation
-compose-fresh:
+.PHONY: compose-fresh
+compose-fresh: ## Rebuilds the containers and forces a recreation
 	docker compose -f ./deployments/docker-compose.yml up --build --force-recreate
