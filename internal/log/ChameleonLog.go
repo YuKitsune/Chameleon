@@ -1,5 +1,10 @@
 package log
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Most of this is taken from logrus with slight modifications to make it easier to abstract
 
 // These are the different logging levels. You can set the logging level to log
@@ -50,6 +55,40 @@ func (level Level) String() string {
 	}
 
 	return "unknown"
+}
+
+// ParseLevel takes a string level and returns the Logrus log level constant.
+func ParseLevel(lvl string) (Level, error) {
+	switch strings.ToLower(lvl) {
+	case "panic":
+		return PanicLevel, nil
+	case "fatal":
+		return FatalLevel, nil
+	case "error":
+		return ErrorLevel, nil
+	case "warn", "warning":
+		return WarnLevel, nil
+	case "info":
+		return InfoLevel, nil
+	case "debug":
+		return DebugLevel, nil
+	case "trace":
+		return TraceLevel, nil
+	}
+
+	var l Level
+	return l, fmt.Errorf("not a valid log Level: %q", lvl)
+}
+
+// A constant exposing all logging levels
+var AllLevels = []Level{
+	PanicLevel,
+	FatalLevel,
+	ErrorLevel,
+	WarnLevel,
+	InfoLevel,
+	DebugLevel,
+	TraceLevel,
 }
 
 type ChameleonLogger interface {

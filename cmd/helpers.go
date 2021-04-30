@@ -40,6 +40,10 @@ func SigHandler(log log.ChameleonLogger) {
 }
 
 func ExitFromError(err error) {
-	fmt.Println(err.Error())
-	panic(err)
+	format := "error: %v\n"
+	if _, err := fmt.Fprintf(os.Stderr, format, err); err != nil {
+		fmt.Printf(format, err)
+	}
+
+	os.Exit(1)
 }
