@@ -1,5 +1,16 @@
 FROM golang:1.16-alpine
+
+# Versioning information
+ARG GIT_COMMIT
+ARG GIT_BRANCH=main
+ARG GIT_DIRTY='false'
+ARG VERSION
+LABEL branch=$GIT_BRANCH \
+    commit=$GIT_COMMIT \
+    dirty=$GIT_DIRTY \
+    version=$VERSION
+
 ADD . /go/src/github.com/YuKitsune/Chameleon
 WORKDIR /go/src/github.com/YuKitsune/Chameleon
-RUN go build -o bin/chameleon-smtp-server cmd/chameleon-smtp-server/main.go
+RUN go build -o bin/chameleon-smtp-server -ldflags "-X 'github.com/yukitsune/chameleon.Version=$VERSION'" cmd/chameleon-smtp-server/main.go
 CMD ["./bin/chameleon-smtp-server"]
