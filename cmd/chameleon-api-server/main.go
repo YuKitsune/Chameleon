@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/yukitsune/chameleon"
 	"github.com/yukitsune/chameleon/cmd"
 	"github.com/yukitsune/chameleon/internal/log"
 	"os"
@@ -25,7 +26,7 @@ func main() {
 		cmd.ExitFromError(err)
 	}
 
-	logger.Infoln("Hello, World!")
+	logger.Infof("Chameleon REST API version %s", chameleon.Version)
 
 	cmd.SigHandler(logger)
 }
