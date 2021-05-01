@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/yukitsune/chameleon/cmd"
-	"github.com/yukitsune/chameleon/internal/log"
 	"strings"
 )
 
 var (
 	logLevel string
 	logDir string
+
+	port int
 )
 
 func main() {
 
-	var port int
 	serveCmd := &cobra.Command{
 		Use: "serve",
 		Short: "Starts the REST API.",
@@ -29,7 +29,7 @@ func main() {
 		Short: "The Chameleon API is the REST API that powers Chameleon.",
 	}
 
-	rootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "info", fmt.Sprintf("the logging level, options are %s", strings.Join(getValidLogLevels(), ", ")))
+	rootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "info", fmt.Sprintf("the logging level, options are %s", strings.Join(cmd.GetValidLogLevels(), ", ")))
 	rootCmd.PersistentFlags().StringVar(&logDir, "logDir", "./logs", "the log directory")
 
 	rootCmd.AddCommand(serveCmd)
@@ -40,40 +40,11 @@ func main() {
 
 func serve(command *cobra.Command, args []string) error {
 
-	logger := makeLogger()
+	logger := cmd.MakeLogger(logLevel, logDir)
 
-	cmd.SigHandler(logger)
+	// Todo: Start HTTP server
+	// 	Wait for either an error from ListenAndServe or OS signal
+
+	cmd.WaitForShutdownSignal(logger)
 	return nil
-}
-
-func makeLogger() log.ChameleonLogger {
-
-	level, err := log.ParseLevel(logLevel)
-	if err != nil {
-		cmd.ExitFromError(err)
-	}
-
-	logFactory := log.NewLogFactory(
-		logDir,
-		level,
-		log.DefaultFileNameProvider,
-		log.LogrusLoggerProvider,
-	)
-
-	logger, err := logFactory.Make()
-	if err != nil {
-		cmd.ExitFromError(err)
-	}
-
-	return logger
-}
-
-func getValidLogLevels() []string {
-	logLevels := log.AllLevels
-	var logLevelStrings []string
-	for _, level := range logLevels {
-		logLevelStrings = append(logLevelStrings, level.String())
-	}
-
-	return logLevelStrings
 }

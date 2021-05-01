@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func SigHandler(log log.ChameleonLogger) {
+func WaitForShutdownSignal(log log.ChameleonLogger) {
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel,
 		syscall.SIGTERM,
@@ -37,6 +37,7 @@ func SigHandler(log log.ChameleonLogger) {
 			return
 		}
 	}
+
 }
 
 func ExitFromError(err error) {
@@ -46,4 +47,36 @@ func ExitFromError(err error) {
 	}
 
 	os.Exit(1)
+}
+
+func MakeLogger(logLevel string, logDir string) log.ChameleonLogger {
+
+	level, err := log.ParseLevel(logLevel)
+	if err != nil {
+		ExitFromError(err)
+	}
+
+	logFactory := log.NewLogFactory(
+		logDir,
+		level,
+		log.DefaultFileNameProvider,
+		log.LogrusLoggerProvider,
+	)
+
+	logger, err := logFactory.Make()
+	if err != nil {
+		ExitFromError(err)
+	}
+
+	return logger
+}
+
+func GetValidLogLevels() []string {
+	logLevels := log.AllLevels
+	var logLevelStrings []string
+	for _, level := range logLevels {
+		logLevelStrings = append(logLevelStrings, level.String())
+	}
+
+	return logLevelStrings
 }
