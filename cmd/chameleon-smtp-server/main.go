@@ -21,10 +21,16 @@ const (
 	configKey = "config"
 
 	hostnameKey = "host"
+	listenInterfaceKey = "listen-interface"
 	maxMailSizeKey = "max-mail-size"
 	timeoutKey  = "timeout"
 	maxClientsKey = "max-clients"
 	xClientOnKey = "xclient-on"
+
+	startTLSOnKey = "start-tls-on"
+	tlsAlwaysOnKey = "tls-always-on"
+	privateKeyFileKey = "private-key-file"
+	publicKeyFileKey = "public-key-file-key"
 )
 
 func main() {
@@ -43,6 +49,9 @@ func main() {
 
 	serveCmd.Flags().String(hostnameKey, "", "the DNS name of the SMTP server")
 	_ = viper.BindPFlag(hostnameKey, serveCmd.Flags().Lookup(hostnameKey))
+
+	serveCmd.Flags().String(listenInterfaceKey, "127.0.0.1:2525", "Listen interface specified in <ip>:<port>")
+	_ = viper.BindPFlag(listenInterfaceKey, serveCmd.Flags().Lookup(listenInterfaceKey))
 
 	serveCmd.Flags().Int(maxMailSizeKey, 50000000, "the maximum size (in bytes) that an email can be")
 	_ = viper.BindPFlag(maxMailSizeKey, serveCmd.Flags().Lookup(maxMailSizeKey))
@@ -74,8 +83,6 @@ func main() {
 func serve(command *cobra.Command, args []string) error {
 
 	logger := cmd.MakeLogger(logLevel, logDir)
-
-
 
 	config, err := getConfig()
 	if err != nil {
@@ -127,41 +134,42 @@ func getConfig() (*smtp.ServerConfig, error) {
 	// --config flag not provided,
 	// gonna have to fill it out manually
 
-	// Todo: Assign these via environment variables or command line args
-	// Todo: Revisit TLS configuration
-	startTlSOn := false
-	tlsAlwaysOn := false
+	startTlSOn := viper.GetBool(startTLSOnKey)
+	tlsAlwaysOn := viper.GetBool(tlsAlwaysOnKey)
+	privateKeyFile := viper.GetString(privateKeyFileKey)
+	publicKeyFile := viper.GetString(publicKeyFileKey)
+
+	// Todo: Add these as flags
+	rootCAs := ""
 	protocols := []string{"tls1.0", "tls1.2"}
 	ciphers := []string{"TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305", "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305", "TLS_RSA_WITH_RC4_128_SHA", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_RC4_128_SHA", "TLS_ECDHE_RSA_WITH_RC4_128_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"}
 	curves := []string{"P256", "P384", "P521", "X25519"}
-	privateKeyFile := ""
-	publicKeyFile := ""
-	rootCAs := ""
 	clientAuthType := ""
 
 	tlsConfig := smtp.ServerTLSConfig{
 		StartTLSOn:               startTlSOn,
 		AlwaysOn:                 tlsAlwaysOn,
+		PrivateKeyFile:           privateKeyFile,
+		PublicKeyFile:            publicKeyFile,
 		Protocols:                protocols,
 		Ciphers:                  ciphers,
 		Curves:                   curves,
-		PrivateKeyFile:           privateKeyFile,
-		PublicKeyFile:            publicKeyFile,
 		RootCAs:                  rootCAs,
 		ClientAuthType:           clientAuthType,
 		PreferServerCipherSuites: false,
 	}
 
 	hostName := viper.GetString(hostnameKey)
-	var maxSize = viper.GetInt64(maxMailSizeKey)
-	timeout := viper.GetInt(timeoutKey)
+	listenInterface := viper.GetString(listenInterfaceKey)
+	maxSize := viper.GetInt64(maxMailSizeKey)
+	timeout := viper.GetInt(timeoutKey) // Todo: Ensure this is read as seconds
 	maxClients := viper.GetInt(maxClientsKey)
 	xClientOn := viper.GetBool(xClientOnKey)
 
 	config := &smtp.ServerConfig{
 		TLS:             tlsConfig,
 		Hostname:        hostName,
-		ListenInterface: "",
+		ListenInterface: listenInterface,
 		MaxSize:         maxSize,
 		Timeout:         timeout,
 		MaxClients:      maxClients,
