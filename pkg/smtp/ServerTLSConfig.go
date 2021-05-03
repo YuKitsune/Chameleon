@@ -69,26 +69,26 @@ type ServerTLSConfig struct {
 	// Use Go's default if empty
 	Curves []string `json:"curves,omitempty"`
 	// PrivateKeyFile path to cert private key in PEM format.
-	PrivateKeyFile string `json:"private_key_file"`
+	PrivateKeyFile string `json:"private-key-file"`
 	// PublicKeyFile path to cert (public key) chain in PEM format.
-	PublicKeyFile string `json:"public_key_file"`
+	PublicKeyFile string `json:"public-key-file"`
 	// TLS Root cert authorities to use. "A PEM encoded CA's certificate file.
 	// Defaults to system's root CA file if empty
-	RootCAs string `json:"root_cas_file,omitempty"`
+	RootCAs string `json:"root-cas-file,omitempty"`
 	// declares the policy the server will follow for TLS Client Authentication.
 	// Use Go's default if empty
-	ClientAuthType string `json:"client_auth_type,omitempty"`
+	ClientAuthType string `json:"client-auth-type,omitempty"`
 	// The following used to watch certificate changes so that the TLS can be reloaded
 	_privateKeyFileMtime int64
 	_publicKeyFileMtime  int64
 	// controls whether the server selects the
 	// client's most preferred cipher suite
-	PreferServerCipherSuites bool `json:"prefer_server_cipher_suites,omitempty"`
+	PreferServerCipherSuites bool `json:"prefer-server-cipher-suites,omitempty"`
 	// StartTLSOn should we offer STARTTLS command. Cert must be valid.
 	// False by default
-	StartTLSOn bool `json:"start_tls_on,omitempty"`
+	StartTLSOn bool `json:"start-tls-on,omitempty"`
 	// AlwaysOn run this server as a pure TLS server, i.e. SMTPS
-	AlwaysOn bool `json:"tls_always_on,omitempty"`
+	AlwaysOn bool `json:"always-on,omitempty"`
 }
 
 // Gets the timestamp of the TLS certificates. Returns a unix time of when they were last modified

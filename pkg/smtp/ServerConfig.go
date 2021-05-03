@@ -18,20 +18,20 @@ type ServerConfig struct {
 	// make sure that the Hostname matches the cert. Defaults to os.Hostname()
 	// Hostname will also be used to fill the 'Host' property when the "RCPT TO" address is
 	// addressed to just <postmaster>
-	Hostname string `json:"host_name"`
+	Hostname string `json:"hostname"`
 	// Listen interface specified in <ip>:<port> - defaults to 127.0.0.1:2525
-	ListenInterface string `json:"listen_interface"`
+	ListenInterface string `json:"listen-interface"`
 	// MaxSize is the maximum size of an email that will be accepted for delivery.
 	// Defaults to 10 Mebibytes
-	MaxSize int64 `json:"max_size"`
+	MaxSize int64 `json:"max-mail-size"`
 	// Timeout specifies the connection timeout in seconds. Defaults to 30
 	Timeout int `json:"timeout"`
 	// MaxClients controls how many maximum clients we can handle at once.
 	// Defaults to defaultMaxClients
-	MaxClients int `json:"max_clients"`
+	MaxClients int `json:"max-clients"`
 	// XClientOn when using a proxy such as Nginx, XCLIENT command is used to pass the
 	// original client's IP address & client's HELO
-	XClientOn bool `json:"xclient_on,omitempty"`
+	XClientOn bool `json:"xclient-on,omitempty"`
 }
 
 // Loads in timestamps for the TLS keys

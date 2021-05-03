@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -8,6 +9,7 @@ import (
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/handlers"
 	"github.com/yukitsune/chameleon/pkg/smtp"
+	"io/ioutil"
 	"net/url"
 	"strings"
 )
@@ -20,17 +22,20 @@ var (
 const (
 	configKey = "config"
 
-	hostnameKey = "host"
-	listenInterfaceKey = "listen-interface"
-	maxMailSizeKey = "max-mail-size"
-	timeoutKey  = "timeout"
-	maxClientsKey = "max-clients"
-	xClientOnKey = "xclient-on"
+	apiBaseUrlKey = "chameleon-api-base-url"
+	allowedHostsKey = "allowed-hosts"
 
-	startTLSOnKey = "start-tls-on"
-	tlsAlwaysOnKey = "tls-always-on"
-	privateKeyFileKey = "private-key-file"
-	publicKeyFileKey = "public-key-file-key"
+	hostnameKey = "smtp-hostname"
+	listenInterfaceKey = "smtp-listen-interface"
+	maxMailSizeKey = "smtp-max-mail-size"
+	timeoutKey  = "smtp-timeout"
+	maxClientsKey = "smtp-max-clients"
+	xClientOnKey = "smtp-xclient-on"
+
+	startTLSOnKey = "smtp-tls-start-tls-on"
+	tlsAlwaysOnKey = "smtp-tls-always-on"
+	privateKeyFileKey = "smtp-tls-private-key-file"
+	publicKeyFileKey = "smtp-tls-public-key-file-key"
 )
 
 func main() {
@@ -42,10 +47,15 @@ func main() {
 
 	// Todo: Make a nicer function for this
 	// 	Maybe move to a separate abstraction
-
-	serveCmd.Flags().String(configKey, "", "the config file for the SMTP server. If provided, then all other flags will be ignored")
+	serveCmd.Flags().String(configKey, "", "the path to the config file. If provided, then all other flags will be ignored")
 	_ = viper.BindPFlag(configKey, serveCmd.Flags().Lookup(configKey))
-	viper.SetDefault(configKey, nil)
+
+	serveCmd.Flags().String(apiBaseUrlKey, "", "the base URL for the chameleon API server (E.g. https://api.chameleon.io)")
+	_ = viper.BindPFlag(apiBaseUrlKey, serveCmd.Flags().Lookup(apiBaseUrlKey))
+
+	// Todo: Need a better explanation
+	serveCmd.Flags().String(allowedHostsKey, "relay.chameleon.io", "the allowed host")
+	_ = viper.BindPFlag(allowedHostsKey, serveCmd.Flags().Lookup(allowedHostsKey))
 
 	serveCmd.Flags().String(hostnameKey, "", "the DNS name of the SMTP server")
 	_ = viper.BindPFlag(hostnameKey, serveCmd.Flags().Lookup(hostnameKey))
@@ -84,22 +94,24 @@ func serve(command *cobra.Command, args []string) error {
 
 	logger := cmd.MakeLogger(logLevel, logDir)
 
-	config, err := getConfig()
+	chameleonConfig, err := getConfig()
 	if err != nil {
-		logger.Fatal(err)
+		return err
 	}
 
-	apiUrl, err := url.Parse("https://api.chameleon.io/")
+	apiUrl, err := url.Parse(chameleonConfig.ApiUrl)
 	if err != nil {
-		logger.Fatal(err)
+		return err
 	}
 
 	handler := handlers.NewDefaultHandler(apiUrl, logger)
 
-	server, err := smtp.NewServer(config, handler, logger)
+	server, err := smtp.NewServer(chameleonConfig.SmtpConfig, handler, logger)
 	if err != nil {
-		logger.Fatal(err)
+		return err
 	}
+
+	server.SetAllowedHosts(chameleonConfig.AllowedHosts)
 
 	go func(logger log.ChameleonLogger) {
 		if err := server.Start(); err != nil {
@@ -114,21 +126,24 @@ func serve(command *cobra.Command, args []string) error {
 	return nil
 }
 
-func getConfig() (*smtp.ServerConfig, error) {
+func getConfig() (*ChameleonSmtpServerConfig, error) {
 
 	// If the --config flag was provided, then pull the config from there
-	configValue := viper.GetString(configKey)
-	if configValue != "" {
+	configFile := viper.GetString(configKey)
+	if configFile != "" {
 
-		viper.SetConfigFile(configValue)
-
-		config := &smtp.ServerConfig{}
-		err := viper.Unmarshal(config)
+		data, err := ioutil.ReadFile(configFile)
 		if err != nil {
 			return nil, err
 		}
 
-		return config, nil
+		chameleonConfig := &ChameleonSmtpServerConfig{}
+		err = json.Unmarshal(data, chameleonConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		return chameleonConfig, nil
 	}
 
 	// --config flag not provided,
@@ -166,7 +181,7 @@ func getConfig() (*smtp.ServerConfig, error) {
 	maxClients := viper.GetInt(maxClientsKey)
 	xClientOn := viper.GetBool(xClientOnKey)
 
-	config := &smtp.ServerConfig{
+	smtpConfig := smtp.ServerConfig{
 		TLS:             tlsConfig,
 		Hostname:        hostName,
 		ListenInterface: listenInterface,
@@ -175,6 +190,12 @@ func getConfig() (*smtp.ServerConfig, error) {
 		MaxClients:      maxClients,
 		XClientOn:       xClientOn,
 	}
+	
+	chameleonConfig := &ChameleonSmtpServerConfig{
+		ApiUrl:     viper.GetString(apiBaseUrlKey),
+		AllowedHosts: viper.GetStringSlice(allowedHostsKey),
+		SmtpConfig: smtpConfig,
+	}
 
-	return config, nil
+	return chameleonConfig, nil
 }
