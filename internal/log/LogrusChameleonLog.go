@@ -12,26 +12,32 @@ type LogrusChameleonLogger struct {
 }
 
 func (l *LogrusChameleonLogger) GetLevel() Level {
-	logrusLevel := l.GetLevel()
+	logrusLevel := l.Logger.GetLevel()
 	levelInt := uint8(logrusLevel)
 	chameleonLevel := Level(levelInt)
 	return chameleonLevel
 }
 
 func (l *LogrusChameleonLogger) WithField(key string, value interface{}) ChameleonLogger {
-	return l.WithField(key, value)
+	return wrapEntry(l.Logger.WithField(key, value))
 }
 
 func (l *LogrusChameleonLogger) WithFields(fields Fields) ChameleonLogger {
-	return l.WithFields(fields)
+	return wrapEntry(l.Logger.WithFields(logrus.Fields(fields)))
 }
 
 func (l *LogrusChameleonLogger) WithError(err error) ChameleonLogger {
-	return l.WithError(err)
+	return wrapEntry(l.Logger.WithError(err))
 }
 
 func (l *LogrusChameleonLogger) IsDebug() bool {
 	return l.GetLevel() == DebugLevel
+}
+
+func wrapEntry(entry *logrus.Entry) *LogrusChameleonLogger {
+	return &LogrusChameleonLogger{
+		*entry.Logger,
+	}
 }
 
 func NewLogrusChameleonLogger(filename string, level Level) (*LogrusChameleonLogger, error) {
