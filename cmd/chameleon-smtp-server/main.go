@@ -14,11 +14,6 @@ import (
 	"strings"
 )
 
-var (
-	logLevel string
-	logDir string
-)
-
 const (
 	configKey = "config"
 
@@ -81,8 +76,11 @@ func main() {
 		Short: "The Chameleon SMTP server is the entry point for all mail.",
 	}
 
-	rootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "info", fmt.Sprintf("the logging level, options are %s", strings.Join(cmd.GetValidLogLevels(), ", ")))
-	rootCmd.PersistentFlags().StringVar(&logDir, "logDir", "./logs", "the log directory")
+	rootCmd.PersistentFlags().String(log.LogLevelKey, "info", fmt.Sprintf("the logging level, options are %s", strings.Join(cmd.GetValidLogLevels(), ", ")))
+	_ = viper.BindPFlag(log.LogLevelKey, rootCmd.Flags().Lookup(log.LogLevelKey))
+
+	rootCmd.PersistentFlags().String(log.LogDirKey, "./logs", "the log directory")
+	_ = viper.BindPFlag(log.LogDirKey, rootCmd.Flags().Lookup(log.LogDirKey))
 
 	rootCmd.AddCommand(serveCmd)
 	if err := rootCmd.Execute(); err != nil {
@@ -92,7 +90,7 @@ func main() {
 
 func serve(command *cobra.Command, args []string) error {
 
-	logger := cmd.MakeLogger(logLevel, logDir)
+	logger := cmd.MakeLogger(viper.GetString(log.LogLevelKey), viper.GetString(log.LogDirKey))
 
 	chameleonConfig, err := getConfig()
 	if err != nil {
@@ -124,6 +122,38 @@ func serve(command *cobra.Command, args []string) error {
 	server.Shutdown()
 
 	return nil
+}
+
+var configFile string
+
+func initConfig() {
+
+	if configFile != "" {
+		viper.SetConfigFile(configFile)
+	} else {
+		viper.SetConfigName("chameleond")
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath("/etc/chameleond")
+		viper.AddConfigPath(".")
+
+		viper.SetEnvPrefix("chameleon")
+		viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+		viper.AutomaticEnv()
+	}
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		_, ok := err.(viper.ConfigFileNotFoundError)
+		if ok {
+			// Config file not found, try to build the config based on flags and environment variables
+		} else {
+			// Config file was found, but some error occurred
+		}
+	}
+}
+
+func readConfigFromFlags() {
+
 }
 
 func getConfig() (*ChameleonSmtpServerConfig, error) {
