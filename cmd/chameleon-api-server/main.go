@@ -9,7 +9,7 @@ import (
 
 var (
 	logLevel string
-	logDir string
+	logDir   string
 
 	port int
 )
@@ -17,15 +17,15 @@ var (
 func main() {
 
 	serveCmd := &cobra.Command{
-		Use: "serve",
+		Use:   "serve",
 		Short: "Starts the REST API.",
-		RunE: serve,
+		RunE:  serve,
 	}
 
 	serveCmd.Flags().IntVar(&port, "port", 80, "the port number to listen for requests on")
 
 	rootCmd := &cobra.Command{
-		Use: "chameleon-api-server <command> [flags]",
+		Use:   "chameleon-api-server <command> [flags]",
 		Short: "The Chameleon API is the REST API that powers Chameleon.",
 	}
 

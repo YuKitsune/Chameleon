@@ -15,15 +15,15 @@ var configFile string
 
 func main() {
 	serveCmd := &cobra.Command{
-		Use: "serve",
+		Use:   "serve",
 		Short: "Starts the SMTP server",
-		RunE: serve,
+		RunE:  serve,
 	}
 
 	serveCmd.Flags().StringVar(&configFile, "config", "", "the path to the config file")
 
 	rootCmd := &cobra.Command{
-		Use: "chameleon-smtp-server <command> [flags]",
+		Use:   "chameleon-smtp-server <command> [flags]",
 		Short: "The Chameleon SMTP server is the entry point for all mail.",
 	}
 

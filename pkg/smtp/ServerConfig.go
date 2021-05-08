@@ -13,7 +13,6 @@ const defaultTimeout = 30
 const defaultInterface = "127.0.0.1:2525"
 const defaultMaxSize = int64(10 << 20) // 10 Mebibytes
 
-
 // ServerConfig specifies config options for a single server
 type ServerConfig struct {
 	// TLS Configuration
