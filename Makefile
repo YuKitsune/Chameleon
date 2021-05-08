@@ -39,13 +39,13 @@ clean: ## Removes the bin/ directory
 	rm -rf bin
 
 .PHONY: build-containers
-build-containers: build-smtp-container build-api-container ## Builds a docker container for all programs
+build-containers: build-mtd-container build-api-container ## Builds a docker container for all programs
 
-.PHONY: build-smtp-container
-build-smtp-container: ## Builds the docker container for the SMTP server
+.PHONY: build-mtd-container
+build-mtd-container: ## Builds the docker container for the MTD
 	docker build \
-		-t chameleon-smtp-server \
-		-f build/package/chameleon-smtp-server/Dockerfile \
+		-t chameleon-mtd \
+		-f build/package/chameleon-mtd/Dockerfile \
 		$(DOCKER_BUILD_ARGS) \
 		.
 

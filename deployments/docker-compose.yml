@@ -6,9 +6,9 @@ services:
       dockerfile: build/package/chameleon-api-server/Dockerfile
     ports:
       - 8000:8000
-  smtp:
+  mtd:
     build:
       context: ../
-      dockerfile: build/package/chameleon-smtp-server/Dockerfile
+      dockerfile: build/package/chameleon-mtd/Dockerfile
     ports:
       - 25:25

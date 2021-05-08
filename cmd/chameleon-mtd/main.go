@@ -13,6 +13,26 @@ import (
 
 var configFile string
 
+type ChameleonMtdConfig struct {
+	ApiUrl  string             `yaml:"chameleon-api-base-url"`
+	Smtp    *smtp.ServerConfig `yaml:"smtp"`
+	Logging *log.LogConfig     `yaml:"log"`
+}
+
+func (c *ChameleonMtdConfig) SetDefaults() error {
+	err := c.Smtp.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	err = c.Logging.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func main() {
 	serveCmd := &cobra.Command{
 		Use:   "serve",
@@ -23,7 +43,7 @@ func main() {
 	serveCmd.Flags().StringVar(&configFile, "config", "", "the path to the config file")
 
 	rootCmd := &cobra.Command{
-		Use:   "chameleon-smtp-server <command> [flags]",
+		Use:   "chameleon-mtd <command> [flags]",
 		Short: "The Chameleon SMTP server is the entry point for all mail.",
 	}
 
@@ -37,7 +57,7 @@ func main() {
 
 func serve(command *cobra.Command, args []string) error {
 
-	config := ChameleonSmtpServerConfig{}
+	config := ChameleonMtdConfig{}
 	if configFile != "" {
 		data, err := os.ReadFile(configFile)
 		if err != nil {
