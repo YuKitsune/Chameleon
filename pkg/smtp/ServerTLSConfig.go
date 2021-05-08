@@ -1,6 +1,10 @@
 package smtp
 
-import "crypto/tls"
+import (
+	"crypto/tls"
+	"errors"
+	"fmt"
+)
 
 // https://golang.org/pkg/crypto/tls/#pkg-constants
 // Ciphers introduced before Go 1.7 are listed here,
@@ -59,40 +63,82 @@ var TLSClientAuthTypes = map[string]tls.ClientAuthType{
 }
 
 type ServerTLSConfig struct {
+
 	// TLS Protocols to use. [0] = min, [1]max
 	// Use Go's default if empty
-	Protocols []string `json:"protocols,omitempty"`
+	Protocols []string `yaml:"protocols,omitempty"`
+
 	// TLS Ciphers to use.
 	// Use Go's default if empty
-	Ciphers []string `json:"ciphers,omitempty"`
+	Ciphers []string `yaml:"ciphers,omitempty"`
+
 	// TLS Curves to use.
 	// Use Go's default if empty
-	Curves []string `json:"curves,omitempty"`
+	Curves []string `yaml:"curves,omitempty"`
+
 	// PrivateKeyFile path to cert private key in PEM format.
-	PrivateKeyFile string `json:"private-key-file"`
+	PrivateKeyFile string `yaml:"private-key-file"`
+
 	// PublicKeyFile path to cert (public key) chain in PEM format.
-	PublicKeyFile string `json:"public-key-file"`
+	PublicKeyFile string `yaml:"public-key-file"`
+
 	// TLS Root cert authorities to use. "A PEM encoded CA's certificate file.
 	// Defaults to system's root CA file if empty
-	RootCAs string `json:"root-cas-file,omitempty"`
+	RootCAs string `yaml:"root-cas-file,omitempty"`
+
 	// declares the policy the server will follow for TLS Client Authentication.
 	// Use Go's default if empty
-	ClientAuthType string `json:"client-auth-type,omitempty"`
+	ClientAuthType string `yaml:"client-auth-type,omitempty"`
+
 	// The following used to watch certificate changes so that the TLS can be reloaded
 	_privateKeyFileMtime int64
 	_publicKeyFileMtime  int64
+
 	// controls whether the server selects the
 	// client's most preferred cipher suite
-	PreferServerCipherSuites bool `json:"prefer-server-cipher-suites,omitempty"`
+	PreferServerCipherSuites bool `yaml:"prefer-server-cipher-suites,omitempty"`
+
 	// StartTLSOn should we offer STARTTLS command. Cert must be valid.
 	// False by default
-	StartTLSOn bool `json:"start-tls-on,omitempty"`
+	StartTLSOn bool `yaml:"start-tls-on,omitempty"`
+
 	// AlwaysOn run this server as a pure TLS server, i.e. SMTPS
-	AlwaysOn bool `json:"always-on,omitempty"`
+	AlwaysOn bool `yaml:"always-on,omitempty"`
 }
 
 // Gets the timestamp of the TLS certificates. Returns a unix time of when they were last modified
 // when the config was read. We use this info to determine if TLS needs to be re-loaded.
 func (stc *ServerTLSConfig) getTlsKeyTimestamps() (int64, int64) {
 	return stc._privateKeyFileMtime, stc._publicKeyFileMtime
+}
+
+func (stc *ServerTLSConfig) SetDefaults() error {
+
+	err := stc.Validate()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (stc *ServerTLSConfig) Validate() error {
+	var errs Errors
+
+	if stc.StartTLSOn || stc.AlwaysOn {
+		if stc.PublicKeyFile == "" {
+			errs = append(errs, errors.New("PublicKeyFile is empty"))
+		}
+		if stc.PrivateKeyFile == "" {
+			errs = append(errs, errors.New("PrivateKeyFile is empty"))
+		}
+		if _, err := tls.LoadX509KeyPair(stc.PublicKeyFile, stc.PrivateKeyFile); err != nil {
+			errs = append(errs, fmt.Errorf("cannot use TLS config, %v", err))
+		}
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+
+	return nil
 }

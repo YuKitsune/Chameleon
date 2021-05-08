@@ -6,8 +6,21 @@ import (
 )
 
 type ChameleonSmtpServerConfig struct {
-	ApiUrl string `json:"chameleon-api-base-url"`
-	AllowedHosts []string `json:"allowed-hosts"` // Todo: this seems like something for SMTP config
-	SmtpConfig smtp.ServerConfig `json:"smtp"`
-	LogConfig log.LogConfig `json:"log"`
+	ApiUrl  string             `yaml:"chameleon-api-base-url"`
+	Smtp    *smtp.ServerConfig `yaml:"smtp"`
+	Logging *log.LogConfig     `yaml:"log"`
+}
+
+func (c *ChameleonSmtpServerConfig) SetDefaults() error {
+	err := c.Smtp.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	err = c.Logging.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
