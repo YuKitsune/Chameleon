@@ -95,6 +95,7 @@ func NewServer(sc *ServerConfig, handler Handler, log log.ChameleonLogger) (*Ser
 	}
 
 	server.setTimeout(sc.Timeout)
+	server.SetAllowedHosts(sc.AllowedHosts)
 	if err := server.configureTLS(); err != nil {
 		return server, err
 	}
@@ -168,7 +169,7 @@ func (s *Server) setTimeout(seconds int) {
 }
 
 // Set the allowed hosts for the server
-func (s *Server) setAllowedHosts(allowedHosts []string) {
+func (s *Server) SetAllowedHosts(allowedHosts []string) {
 	s.hosts.Lock()
 	defer s.hosts.Unlock()
 	s.hosts.table = make(map[string]bool, len(allowedHosts))

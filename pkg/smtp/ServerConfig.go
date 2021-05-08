@@ -1,37 +1,49 @@
 package smtp
 
 import (
-	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"reflect"
 	"time"
 )
 
+const defaultMaxClients = 100
+const defaultTimeout = 30
+const defaultInterface = "127.0.0.1:2525"
+const defaultMaxSize = int64(10 << 20) // 10 Mebibytes
+
 // ServerConfig specifies config options for a single server
 type ServerConfig struct {
 	// TLS Configuration
-	TLS ServerTLSConfig `json:"tls,omitempty"`
-	// Hostname will be used in the server's reply to HELO/EHLO. If TLS enabled
-	// make sure that the Hostname matches the cert. Defaults to os.Hostname()
-	// Hostname will also be used to fill the 'Host' property when the "RCPT TO" address is
-	// addressed to just <postmaster>
-	Hostname string `json:"host_name"`
+	TLS *ServerTLSConfig `yaml:"tls,omitempty"`
+
+	// Hostname will be used in the server's reply to HELO/EHLO
+	// If TLS enabled, make sure that the Hostname matches the cert
+	// Defaults to os.Hostname()
+	// Hostname will also be used to fill the 'Host' property when the "RCPT TO" address is addressed to just <postmaster>
+	Hostname string `yaml:"hostname"`
+
 	// Listen interface specified in <ip>:<port> - defaults to 127.0.0.1:2525
-	ListenInterface string `json:"listen_interface"`
-	// MaxSize is the maximum size of an email that will be accepted for delivery.
+	ListenInterface string `yaml:"listen-interface"`
+
+	// MaxSize is the maximum size of an email that will be accepted for delivery
 	// Defaults to 10 Mebibytes
-	MaxSize int64 `json:"max_size"`
+	MaxSize int64 `yaml:"max-mail-size"`
+
 	// Timeout specifies the connection timeout in seconds. Defaults to 30
-	Timeout int `json:"timeout"`
-	// MaxClients controls how many maximum clients we can handle at once.
+	Timeout int `yaml:"timeout"`
+
+	// MaxClients controls how many maximum clients we can handle at once
 	// Defaults to defaultMaxClients
-	MaxClients int `json:"max_clients"`
+	MaxClients int `yaml:"max-clients"`
+
+	// AllowedHosts lists which hosts to accept email for. Defaults to os.Hostname
+	AllowedHosts []string `yaml:"allowed-hosts"`
+
 	// XClientOn when using a proxy such as Nginx, XCLIENT command is used to pass the
 	// original client's IP address & client's HELO
-	XClientOn bool `json:"xclient_on,omitempty"`
+	XClientOn bool `yaml:"xclient-on,omitempty"`
 }
 
 // Loads in timestamps for the TLS keys
@@ -60,28 +72,6 @@ func (sc *ServerConfig) loadTlsKeyTimestamps() error {
 	} else {
 		return statErr(sc.ListenInterface, err)
 	}
-	return nil
-}
-
-// Validate validates the server's configuration.
-func (sc *ServerConfig) Validate() error {
-	var errs Errors
-
-	if sc.TLS.StartTLSOn || sc.TLS.AlwaysOn {
-		if sc.TLS.PublicKeyFile == "" {
-			errs = append(errs, errors.New("PublicKeyFile is empty"))
-		}
-		if sc.TLS.PrivateKeyFile == "" {
-			errs = append(errs, errors.New("PrivateKeyFile is empty"))
-		}
-		if _, err := tls.LoadX509KeyPair(sc.TLS.PublicKeyFile, sc.TLS.PrivateKeyFile); err != nil {
-			errs = append(errs, fmt.Errorf("cannot use TLS config for [%s], %v", sc.ListenInterface, err))
-		}
-	}
-	if len(errs) > 0 {
-		return errs
-	}
-
 	return nil
 }
 
@@ -149,4 +139,54 @@ func structtomap(obj interface{}) map[string]interface{} {
 		}
 	}
 	return ret
+}
+
+// SetDefaults fills in default server settings for values that were not configured
+// The defaults are:
+// * Server listening to 127.0.0.1:2525
+// * use your hostname to determine your which hosts to accept email for
+// * 100 maximum clients
+// * 10MB max message size
+// * log to Stderr,
+// * log level set to "`debug`"
+// * timeout to 30 sec
+// * Backend configured with the following processors: `HeadersParser|Header|Debugger`
+// where it will log the received emails.
+func (c *ServerConfig) SetDefaults() error {
+
+	err := c.TLS.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	if len(c.AllowedHosts) == 0 {
+		if h, err := os.Hostname(); err != nil {
+			return err
+		} else {
+			c.AllowedHosts = append(c.AllowedHosts, h)
+		}
+	}
+
+	h, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+
+	if c.Hostname == "" {
+		c.Hostname = h
+	}
+	if c.MaxClients == 0 {
+		c.MaxClients = defaultMaxClients
+	}
+	if c.Timeout == 0 {
+		c.Timeout = defaultTimeout
+	}
+	if c.MaxSize == 0 {
+		c.MaxSize = defaultMaxSize // 10 Mebibytes
+	}
+	if c.ListenInterface == "" {
+		c.ListenInterface = defaultInterface
+	}
+
+	return nil
 }

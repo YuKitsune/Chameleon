@@ -2,31 +2,49 @@ package main
 
 import (
 	"fmt"
-	"github.com/yukitsune/chameleon"
+	"github.com/spf13/cobra"
 	"github.com/yukitsune/chameleon/cmd"
-	"github.com/yukitsune/chameleon/internal/log"
-	"os"
+	"strings"
+)
+
+var (
+	logLevel string
+	logDir   string
+
+	port int
 )
 
 func main() {
-	wd, err := os.Getwd()
-	if err != nil {
-		cmd.ExitFromError(err)
+
+	serveCmd := &cobra.Command{
+		Use:   "serve",
+		Short: "Starts the REST API.",
+		RunE:  serve,
 	}
 
-	logFactory := log.NewLogFactory(
-		fmt.Sprintf("%s/logs", wd),
-		log.DebugLevel,
-		log.DefaultFileNameProvider,
-		log.LogrusLoggerProvider,
-	)
+	serveCmd.Flags().IntVar(&port, "port", 80, "the port number to listen for requests on")
 
-	logger, err := logFactory.Make()
-	if err != nil {
-		cmd.ExitFromError(err)
+	rootCmd := &cobra.Command{
+		Use:   "chameleon-api-server <command> [flags]",
+		Short: "The Chameleon API is the REST API that powers Chameleon.",
 	}
 
-	logger.Infof("Chameleon REST API version %s", chameleon.Version)
+	rootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "info", fmt.Sprintf("the logging level, options are %s", strings.Join(cmd.GetValidLogLevels(), ", ")))
+	rootCmd.PersistentFlags().StringVar(&logDir, "logDir", "./logs", "the log directory")
 
-	cmd.SigHandler(logger)
+	rootCmd.AddCommand(serveCmd)
+	if err := rootCmd.Execute(); err != nil {
+		cmd.ExitFromError(err)
+	}
+}
+
+func serve(command *cobra.Command, args []string) error {
+
+	logger := cmd.MakeLogger(logLevel, logDir)
+
+	// Todo: Start HTTP server
+	// 	Wait for either an error from ListenAndServe or OS signal
+
+	cmd.WaitForShutdownSignal(logger)
+	return nil
 }
