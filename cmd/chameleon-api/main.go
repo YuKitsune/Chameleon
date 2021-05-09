@@ -25,7 +25,7 @@ func main() {
 	serveCmd.Flags().IntVar(&port, "port", 80, "the port number to listen for requests on")
 
 	rootCmd := &cobra.Command{
-		Use:   "chameleon-api-server <command> [flags]",
+		Use:   "chameleon-api <command> [flags]",
 		Short: "The Chameleon API is the REST API that powers Chameleon.",
 	}
 

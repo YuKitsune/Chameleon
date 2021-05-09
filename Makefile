@@ -52,8 +52,8 @@ build-mtd-container: ## Builds the docker container for the MTD
 .PHONY: build-api-container
 build-api-container: ## Builds the docker container for the REST API server
 	docker build \
-		-t chameleon-api-server \
-		-f build/package/chameleon-api-server/Dockerfile \
+		-t chameleon-api \
+		-f build/package/chameleon-api/Dockerfile \
 		$(DOCKER_BUILD_ARGS) \
 		.
 

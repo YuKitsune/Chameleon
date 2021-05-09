@@ -3,7 +3,7 @@ services:
   api:
     build:
       context: ../
-      dockerfile: build/package/chameleon-api-server/Dockerfile
+      dockerfile: build/package/chameleon-api/Dockerfile
     ports:
       - 8000:8000
   mtd:
