@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/yukitsune/chameleon/internal/api/handlers"
+	"github.com/yukitsune/chameleon/internal/log"
+	"go.uber.org/dig"
 	"net/http"
 	"time"
 )
@@ -11,18 +13,20 @@ import (
 type ChameleonApiServer struct {
 	config *ApiConfig
 	svr *http.Server
-	router *mux.Router
-
-	validateHandler handlers.ValidateHandler
-	mailHandler handlers.MailHandler
+	container *dig.Container
 }
 
-func NewChameleonApiServer(config *ApiConfig) *ChameleonApiServer {
+func NewChameleonApiServer(config *ApiConfig, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
 	api := &ChameleonApiServer{
 		config: config,
 	}
 
-	h := api.makeHandler()
+	c, err := makeContainer(logger)
+	if err != nil {
+		return nil, err
+	}
+
+	h := makeHandler(c)
 	api.svr = &http.Server{
 		Addr:         api.config.GetAddress(),
 		// Good practice to set timeouts to avoid Slowloris attacks.
@@ -32,7 +36,7 @@ func NewChameleonApiServer(config *ApiConfig) *ChameleonApiServer {
 		Handler: h,
 	}
 
-	return api
+	return api, nil
 }
 
 func (api *ChameleonApiServer) Start() error {
@@ -43,10 +47,43 @@ func (api *ChameleonApiServer) StartTLS() error {
 	return api.svr.ListenAndServeTLS(api.config.CertFile, api.config.KeyFile)
 }
 
-func (api *ChameleonApiServer) makeHandler() http.Handler {
+func makeContainer(logger log.ChameleonLogger) (*dig.Container, error) {
+	c := dig.New()
+	var err error
+
+	err = c.Provide(func () log.ChameleonLogger { return logger})
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.Provide(handlers.NewValidateHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.Provide(handlers.NewMailHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func makeHandler(container *dig.Container) http.Handler {
 	m := mux.NewRouter()
-	m.HandleFunc("/validate", api.validateHandler.Handle)
-	m.HandleFunc("/handle", api.mailHandler.Handle)
+
+	m.HandleFunc("/validate", func(writer http.ResponseWriter, request *http.Request) {
+		_ = container.Invoke(func (handler *handlers.ValidateHandler) {
+			handler.Handle(writer, request)
+		})
+	})
+
+	m.HandleFunc("/handle", func(writer http.ResponseWriter, request *http.Request) {
+		_ = container.Invoke(func (handler *handlers.MailHandler) {
+			handler.Handle(writer, request)
+		})
+	})
+
 	return m
 }
 

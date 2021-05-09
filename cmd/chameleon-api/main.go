@@ -5,6 +5,7 @@ import (
 	"github.com/yukitsune/chameleon/cmd"
 	"github.com/yukitsune/chameleon/internal/api"
 	"github.com/yukitsune/chameleon/internal/log"
+	"go.uber.org/dig"
 	"gopkg.in/yaml.v2"
 	"os"
 )
@@ -74,21 +75,58 @@ func serve(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	logger := cmd.MakeLogger(config.Logging.Level, config.Logging.Directory)
+	container, err := setupContainer(&config)
+	if err != nil {
+		return err
+	}
 
-	// Run our server in a goroutine so that it doesn't block.
-	apiHandler := api.NewChameleonApiServer(config.Api)
-	errorChan := make(chan error, 1)
-	go func() {
+	err = container.Invoke(func (svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
 
-		// Todo: TLS
-		if err = apiHandler.Start(); err != nil {
-			errorChan <- err
-		}
-	}()
+		// Run our server in a goroutine so that it doesn't block.
+		errorChan := make(chan error, 1)
+		go func() {
 
-	cmd.WaitForShutdownSignalOrError(errorChan, logger)
-	_ = apiHandler.Shutdown()
+			// Todo: TLS
+			if err = svr.Start(); err != nil {
+				errorChan <- err
+			}
+		}()
+
+		cmd.WaitForShutdownSignalOrError(errorChan, logger)
+		_ = svr.Shutdown()
+	})
+	if err != nil {
+		return err
+	}
 
 	return nil
+}
+
+func setupContainer(cfg *ChameleonApiConfig) (*dig.Container, error) {
+	c := dig.New()
+	var err error
+
+	// Configuration
+	err = c.Provide(func() *log.LogConfig { return cfg.Logging })
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.Provide(func() *api.ApiConfig { return cfg.Api})
+	if err != nil {
+		return nil, err
+	}
+
+	// Services
+	err = c.Provide(cmd.MakeLogger)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.Provide(api.NewChameleonApiServer)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }

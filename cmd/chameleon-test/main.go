@@ -3,12 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/yukitsune/chameleon/cmd"
+	"github.com/yukitsune/chameleon/internal/log"
 	"net/smtp"
 )
 
 func main() {
 
-	logger := cmd.MakeLogger("trace", "./logs")
+	logger := cmd.MakeLogger(&log.LogConfig{
+		Directory: "./logs",
+		Level:     "trace",
+	})
 
 	fmt.Println("Hello, World!")
 

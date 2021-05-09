@@ -80,7 +80,7 @@ func serve(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	logger := cmd.MakeLogger(config.Logging.Level, config.Logging.Directory)
+	logger := cmd.MakeLogger(config.Logging)
 
 	apiUrl, err := url.Parse(config.ApiUrl)
 	if err != nil {

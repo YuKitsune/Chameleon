@@ -74,15 +74,15 @@ func ExitFromError(err error) {
 	os.Exit(1)
 }
 
-func MakeLogger(logLevel string, logDir string) log.ChameleonLogger {
+func MakeLogger(cfg *log.LogConfig) log.ChameleonLogger {
 
-	level, err := log.ParseLevel(logLevel)
+	level, err := log.ParseLevel(cfg.Level)
 	if err != nil {
 		ExitFromError(err)
 	}
 
 	logFactory := log.NewLogFactory(
-		logDir,
+		cfg.Directory,
 		level,
 		log.DefaultFileNameProvider,
 		log.LogrusLoggerProvider,
