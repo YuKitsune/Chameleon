@@ -36,7 +36,7 @@ func (c *ChameleonMtdConfig) SetDefaults() error {
 func main() {
 	serveCmd := &cobra.Command{
 		Use:   "serve",
-		Short: "Starts the SMTP server",
+		Short: "Starts the mail transfer daemon",
 		RunE:  serve,
 	}
 
@@ -44,7 +44,7 @@ func main() {
 
 	rootCmd := &cobra.Command{
 		Use:   "chameleon-mtd <command> [flags]",
-		Short: "The Chameleon SMTP server is the entry point for all mail.",
+		Short: "The Chameleon mail transfer daemon",
 	}
 
 	rootCmd.AddCommand(serveCmd)
@@ -94,14 +94,15 @@ func serve(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	go func(logger log.ChameleonLogger) {
-		if err := server.Start(); err != nil {
-			logger.Fatal(err)
+	errorChan := make(chan error, 1)
+	go func() {
+		if err = server.Start(); err != nil {
+			errorChan <- err
 		}
-	}(logger)
+	}()
 
-	// server.Start doesn't block, wait for exit signal
-	cmd.WaitForShutdownSignal(logger)
+	// server.Start doesn't block, wait for exit signal or error
+	cmd.WaitForShutdownSignalOrError(errorChan, logger)
 	server.Shutdown()
 
 	return nil

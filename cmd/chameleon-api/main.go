@@ -1,36 +1,49 @@
 package main
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/yukitsune/chameleon/cmd"
-	"strings"
+	"github.com/yukitsune/chameleon/internal/api"
+	"github.com/yukitsune/chameleon/internal/log"
+	"gopkg.in/yaml.v2"
+	"os"
 )
 
-var (
-	logLevel string
-	logDir   string
+var configFile string
 
-	port int
-)
+type ChameleonApiConfig struct {
+	Api *api.ApiConfig `yaml:"api"`
+	Logging *log.LogConfig     `yaml:"log"`
+}
+
+func (c *ChameleonApiConfig) SetDefaults() error {
+	err := c.Api.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	err = c.Logging.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func main() {
 
 	serveCmd := &cobra.Command{
 		Use:   "serve",
-		Short: "Starts the REST API.",
+		Short: "Starts the REST API",
 		RunE:  serve,
 	}
 
-	serveCmd.Flags().IntVar(&port, "port", 80, "the port number to listen for requests on")
+	serveCmd.Flags().StringVar(&configFile, "config", "", "the path to the config file")
 
 	rootCmd := &cobra.Command{
 		Use:   "chameleon-api <command> [flags]",
-		Short: "The Chameleon API is the REST API that powers Chameleon.",
+		Short: "The Chameleon REST API",
 	}
-
-	rootCmd.PersistentFlags().StringVar(&logLevel, "logLevel", "info", fmt.Sprintf("the logging level, options are %s", strings.Join(cmd.GetValidLogLevels(), ", ")))
-	rootCmd.PersistentFlags().StringVar(&logDir, "logDir", "./logs", "the log directory")
 
 	rootCmd.AddCommand(serveCmd)
 	if err := rootCmd.Execute(); err != nil {
@@ -40,11 +53,42 @@ func main() {
 
 func serve(command *cobra.Command, args []string) error {
 
-	logger := cmd.MakeLogger(logLevel, logDir)
+	config := ChameleonApiConfig{}
+	if configFile != "" {
+		data, err := os.ReadFile(configFile)
+		if err != nil {
+			return err
+		}
 
-	// Todo: Start HTTP server
-	// 	Wait for either an error from ListenAndServe or OS signal
+		err = yaml.Unmarshal(data, config)
+		if err != nil {
+			return err
+		}
+	} else {
+		config.Api = &api.ApiConfig{}
+		config.Logging = &log.LogConfig{}
+	}
 
-	cmd.WaitForShutdownSignal(logger)
+	err := config.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	logger := cmd.MakeLogger(config.Logging.Level, config.Logging.Directory)
+
+	// Run our server in a goroutine so that it doesn't block.
+	apiHandler := api.NewChameleonApiServer(config.Api)
+	errorChan := make(chan error, 1)
+	go func() {
+
+		// Todo: TLS
+		if err = apiHandler.Start(); err != nil {
+			errorChan <- err
+		}
+	}()
+
+	cmd.WaitForShutdownSignalOrError(errorChan, logger)
+	_ = apiHandler.Shutdown()
+
 	return nil
 }

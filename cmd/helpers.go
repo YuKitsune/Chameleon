@@ -9,9 +9,52 @@ import (
 	"time"
 )
 
-func WaitForShutdownSignal(log log.ChameleonLogger) {
-	signalChannel := make(chan os.Signal, 1)
-	signal.Notify(signalChannel,
+func WaitForShutdownSignal(logger log.ChameleonLogger) {
+	WaitForSignal(getShutdownSignalChan(), make(chan error, 1), logger)
+}
+
+func WaitForShutdownSignalOrError(errorChan chan error, logger log.ChameleonLogger) {
+	WaitForSignal(getShutdownSignalChan(), errorChan, logger)
+}
+
+func WaitForSignal(shutdownSignalChan chan os.Signal, errorChan chan error, logger log.ChameleonLogger) {
+	select {
+	case sig := <- shutdownSignalChan:
+		handleShutdownSignal(sig, logger)
+		break
+
+	case err := <- errorChan:
+		handleError(err, logger)
+		break
+	}
+}
+
+func handleShutdownSignal(sig os.Signal, logger log.ChameleonLogger) {
+	if sig == syscall.SIGTERM || sig == syscall.SIGQUIT || sig == syscall.SIGINT || sig == os.Kill {
+		logger.Infof("Shutdown signal caught")
+		go func() {
+			select {
+			// exit if graceful shutdown not finished in 60 sec.
+			case <-time.After(time.Second * 60):
+				logger.Error("graceful shutdown timed out")
+				os.Exit(1)
+			}
+		}()
+		logger.Infof("Shutdown completed, exiting.")
+		return
+	} else {
+		logger.Infof("Shutdown, unknown signal caught")
+		return
+	}
+}
+
+func handleError(err error, logger log.ChameleonLogger) {
+	logger.Errorf("A fatal error has occurred: %v", err)
+}
+
+func getShutdownSignalChan() chan os.Signal {
+	shutdownSignalChan := make(chan os.Signal, 1)
+	signal.Notify(shutdownSignalChan,
 		syscall.SIGTERM,
 		syscall.SIGQUIT,
 		syscall.SIGINT,
@@ -19,25 +62,7 @@ func WaitForShutdownSignal(log log.ChameleonLogger) {
 		os.Kill,
 	)
 
-	for sig := range signalChannel {
-		if sig == syscall.SIGTERM || sig == syscall.SIGQUIT || sig == syscall.SIGINT || sig == os.Kill {
-			log.Infof("Shutdown signal caught")
-			go func() {
-				select {
-				// exit if graceful shutdown not finished in 60 sec.
-				case <-time.After(time.Second * 60):
-					log.Error("graceful shutdown timed out")
-					os.Exit(1)
-				}
-			}()
-			log.Infof("Shutdown completed, exiting.")
-			return
-		} else {
-			log.Infof("Shutdown, unknown signal caught")
-			return
-		}
-	}
-
+	return shutdownSignalChan
 }
 
 func ExitFromError(err error) {
