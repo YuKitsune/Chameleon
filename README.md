@@ -4,6 +4,16 @@
 # Chameleon
 Chameleon is an email cloaking service written in Go, and React (TypeScript).
 
+# Current Todos
+1. Implement a Mediator pattern between the API handler, and the unit of work
+2. Per-request transactions? 😯
+
+## Maybes
+- Custom ORM
+  - With blackjack, and hookers
+  - Maybe a more strongly-typed query builder?
+  - Maybe a strongly typed migrator with rollback capabilities?
+
 # Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
