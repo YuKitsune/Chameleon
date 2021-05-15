@@ -1,4 +1,4 @@
-package smtp
+package errors
 
 type Errors []error
 

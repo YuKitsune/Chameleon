@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	chameleonErrors "github.com/yukitsune/chameleon/pkg/errors"
 )
 
 // https://golang.org/pkg/crypto/tls/#pkg-constants
@@ -123,7 +124,7 @@ func (stc *ServerTLSConfig) SetDefaults() error {
 }
 
 func (stc *ServerTLSConfig) Validate() error {
-	var errs Errors
+	var errs chameleonErrors.Errors
 
 	if stc.StartTLSOn || stc.AlwaysOn {
 		if stc.PublicKeyFile == "" {
