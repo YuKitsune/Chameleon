@@ -6,7 +6,9 @@ Chameleon is an email cloaking service written in Go, and React (TypeScript).
 
 # Current Todos
 1. Implement a Mediator pattern between the API handler, and the unit of work
-2. Per-request transactions? 😯
+2. Custom IoC implementation (dig doesn't let us change the lifetime) (Unless there is a better solution?)
+3. Per-request transactions? 😯
+
 
 ## Maybes
 - Custom ORM
