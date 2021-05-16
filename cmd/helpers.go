@@ -19,11 +19,11 @@ func WaitForShutdownSignalOrError(errorChan chan error, logger log.ChameleonLogg
 
 func WaitForSignal(shutdownSignalChan chan os.Signal, errorChan chan error, logger log.ChameleonLogger) {
 	select {
-	case sig := <- shutdownSignalChan:
+	case sig := <-shutdownSignalChan:
 		handleShutdownSignal(sig, logger)
 		break
 
-	case err := <- errorChan:
+	case err := <-errorChan:
 		handleError(err, logger)
 		break
 	}

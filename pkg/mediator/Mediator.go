@@ -3,6 +3,7 @@ package mediator
 import (
 	"fmt"
 	"github.com/yukitsune/chameleon/pkg/errors"
+	"go.uber.org/dig"
 	"reflect"
 )
 
@@ -15,15 +16,28 @@ func (err *ErrHandlerNotFound) Error() string {
 }
 
 type Mediator struct {
-	handlers []*handler
+	handlers []handler
+	container *dig.Container
 }
 
-func New() *Mediator {
-	return &Mediator{}
+func New(c *dig.Container) *Mediator {
+	return &Mediator{
+		container: c,
+	}
 }
 
-func (m *Mediator) AddHandler(v interface{}) error {
-	h, err := newHandler(v)
+func (m *Mediator) AddHandlerInstance(v interface{}) error {
+	h, err := newInstanceHandler(v)
+	if err != nil {
+		return err
+	}
+
+	m.handlers = append(m.handlers, h)
+	return nil
+}
+
+func (m *Mediator) AddHandlerFactory(ctor interface{}) error {
+	h, err := newFactoryHandler(m.container, ctor)
 	if err != nil {
 		return err
 	}
@@ -39,7 +53,7 @@ func (m *Mediator) Send(r interface{}) error {
 	for _, h := range handlers {
 		err := h.Invoke(r)
 		if err != nil {
-			wrappedErr := NewError(h.handler, err)
+			wrappedErr := NewError(h.GetHandlerType(), err)
 			errs = append(errs, wrappedErr)
 		}
 	}
@@ -51,12 +65,12 @@ func (m *Mediator) Send(r interface{}) error {
 	return nil
 }
 
-func (m *Mediator) findHandlers(r interface{}) []*handler {
-	var handlers []*handler
+func (m *Mediator) findHandlers(r interface{}) []handler {
+	var handlers []handler
 
 	requestType := reflect.TypeOf(r)
 	for _, h := range m.handlers {
-		if h.requestType == requestType {
+		if h.GetRequestType() == requestType {
 			handlers = append(handlers, h)
 		}
 	}

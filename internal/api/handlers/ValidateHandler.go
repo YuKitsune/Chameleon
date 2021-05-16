@@ -9,13 +9,13 @@ import (
 
 type ValidateHandler struct {
 	// Todo: Dependencies go here
-	db *gorm.DB
+	db     *gorm.DB
 	logger log.ChameleonLogger
 }
 
 func NewValidateHandler(db *gorm.DB, logger log.ChameleonLogger) *ValidateHandler {
 	return &ValidateHandler{
-		db: db,
+		db:     db,
 		logger: logger,
 	}
 }

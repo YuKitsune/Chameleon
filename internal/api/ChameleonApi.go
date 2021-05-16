@@ -11,8 +11,8 @@ import (
 )
 
 type ChameleonApiServer struct {
-	config *ApiConfig
-	svr *http.Server
+	config    *ApiConfig
+	svr       *http.Server
 	container *dig.Container
 }
 
@@ -28,12 +28,12 @@ func NewChameleonApiServer(config *ApiConfig, logger log.ChameleonLogger) (*Cham
 
 	h := makeHandler(c)
 	api.svr = &http.Server{
-		Addr:         api.config.GetAddress(),
+		Addr: api.config.GetAddress(),
 		// Good practice to set timeouts to avoid Slowloris attacks.
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler: h,
+		Handler:      h,
 	}
 
 	return api, nil
@@ -51,7 +51,7 @@ func makeContainer(logger log.ChameleonLogger) (*dig.Container, error) {
 	c := dig.New()
 	var err error
 
-	err = c.Provide(func () log.ChameleonLogger { return logger})
+	err = c.Provide(func() log.ChameleonLogger { return logger })
 	if err != nil {
 		return nil, err
 	}
@@ -73,13 +73,13 @@ func makeHandler(container *dig.Container) http.Handler {
 	m := mux.NewRouter()
 
 	m.HandleFunc("/validate", func(writer http.ResponseWriter, request *http.Request) {
-		_ = container.Invoke(func (handler *handlers.ValidateHandler) {
+		_ = container.Invoke(func(handler *handlers.ValidateHandler) {
 			handler.Handle(writer, request)
 		})
 	})
 
 	m.HandleFunc("/handle", func(writer http.ResponseWriter, request *http.Request) {
-		_ = container.Invoke(func (handler *handlers.MailHandler) {
+		_ = container.Invoke(func(handler *handlers.MailHandler) {
 			handler.Handle(writer, request)
 		})
 	})

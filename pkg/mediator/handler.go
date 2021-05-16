@@ -1,6 +1,7 @@
 package mediator
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -15,44 +16,48 @@ func (err *ErrHandlerMethodNotFound) Error() string {
 	return "could not find handler method"
 }
 
-type handler struct {
-	handler       interface{}
-	requestType   reflect.Type
-	handlerMethod reflect.Value
+type handler interface {
+	Invoke(r interface{}) error
+	GetHandlerType() reflect.Type
+	GetRequestType() reflect.Type
 }
 
-func newHandler(h interface{}) (*handler, error) {
+func getHandlerMethodAndRequestType(v interface{}) (*reflect.Value, *reflect.Type, error) {
 
-	method := reflect.ValueOf(h).MethodByName(InternalHandlerFuncName)
+	fmt.Printf("%T", v)
+	method := reflect.ValueOf(v).MethodByName(InternalHandlerFuncName)
 	numIn := method.Type().NumIn()
 	if numIn != 1 {
-		return nil, &ErrHandlerMethodNotFound{}
+		return nil, nil, &ErrHandlerMethodNotFound{}
 	}
 
 	requestType := method.Type().In(0)
 	returnsError := method.Type().Out(0).Name() == "error"
 	if !returnsError {
+		return nil, nil, &ErrHandlerMethodNotFound{}
+	}
+
+	return &method, &requestType, nil
+}
+
+func getRequestType(handlerType reflect.Type) (*reflect.Type, error) {
+
+	method, exists := handlerType.MethodByName(InternalHandlerFuncName)
+	if !exists {
 		return nil, &ErrHandlerMethodNotFound{}
 	}
 
-	return &handler{
-		handler:       h,
-		requestType:   requestType,
-		handlerMethod: method,
-	}, nil
-}
-
-func (h *handler) Invoke(r interface{}) error {
-
-	// Setup our argument
-	var in []reflect.Value
-	in = append(in, reflect.ValueOf(r))
-
-	// Invoke the handler
-	out := h.handlerMethod.Call(in)
-	if !out[0].IsNil() {
-		return out[0].Interface().(error)
+	numIn := method.Type.NumIn()
+	if numIn != 2 {
+		return nil, &ErrHandlerMethodNotFound{}
 	}
 
-	return nil
+	// first arg is the received, second is the event
+	requestType := method.Type.In(1)
+	returnsError := method.Type.Out(0).Name() == "error"
+	if !returnsError {
+		return nil, &ErrHandlerMethodNotFound{}
+	}
+
+	return &requestType, nil
 }

@@ -13,8 +13,8 @@ import (
 var configFile string
 
 type ChameleonApiConfig struct {
-	Api *api.ApiConfig `yaml:"api"`
-	Logging *log.LogConfig     `yaml:"log"`
+	Api     *api.ApiConfig `yaml:"api"`
+	Logging *log.LogConfig `yaml:"log"`
 }
 
 func (c *ChameleonApiConfig) SetDefaults() error {
@@ -80,7 +80,7 @@ func serve(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	err = container.Invoke(func (svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
+	err = container.Invoke(func(svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
 
 		// Run our server in a goroutine so that it doesn't block.
 		errorChan := make(chan error, 1)
@@ -112,7 +112,7 @@ func setupContainer(cfg *ChameleonApiConfig) (*dig.Container, error) {
 		return nil, err
 	}
 
-	err = c.Provide(func() *api.ApiConfig { return cfg.Api})
+	err = c.Provide(func() *api.ApiConfig { return cfg.Api })
 	if err != nil {
 		return nil, err
 	}
