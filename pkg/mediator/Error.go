@@ -1,19 +1,22 @@
 package mediator
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 type Error struct {
-	handler interface{}
+	handlerType reflect.Type
 	err     error
 }
 
-func NewError(handler interface{}, err error) *Error {
+func NewError(handlerType reflect.Type, err error) *Error {
 	return &Error{
-		handler: handler,
+		handlerType: handlerType,
 		err:     err,
 	}
 }
 
 func (e Error) Error() string {
-	return fmt.Sprintf("Handler: %T Error: %s", e.handler, e.err.Error())
+	return fmt.Sprintf("Handler: %s Error: %s", e.handlerType.String(), e.err.Error())
 }
