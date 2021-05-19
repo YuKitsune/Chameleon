@@ -2,8 +2,8 @@ package mediator
 
 import (
 	"fmt"
+	"github.com/yukitsune/chameleon/pkg/ioc"
 	"github.com/yukitsune/chameleon/pkg/mediator/mocks"
-	"go.uber.org/dig"
 	"reflect"
 	"strings"
 	"testing"
@@ -12,7 +12,7 @@ import (
 func TestMediator_Send(t *testing.T) {
 
 	t.Run("No Handlers", func (t *testing.T) {
-		c := dig.New()
+		c := ioc.NewGolobbyContainer()
 		m := New(c)
 
 		r := mocks.MockRequest{
@@ -42,9 +42,9 @@ func TestMediator_Send(t *testing.T) {
 	t.Run("Single Handler Factory", func (t *testing.T) {
 		testMediatorSendWithFactory(
 			[]interface{} {mocks.NewMockHandlerWithService },
-			func (c *dig.Container) ([]mocks.MockServiceInterface, error) {
+			func (c ioc.Container) ([]mocks.MockServiceInterface, error) {
 				service := mocks.NewMockService()
-				err := c.Provide(func () *mocks.MockService { return service })
+				err := c.RegisterSingletonInstance(service)
 				if err != nil {
 					return nil, err
 				}
@@ -60,19 +60,19 @@ func TestMediator_Send(t *testing.T) {
 				mocks.NewMockHandlerWithService,
 				mocks.NewMockHandlerWithService2ElectricBoogaloo,
 			},
-			func (c *dig.Container) ([]mocks.MockServiceInterface, error) {
+			func (c ioc.Container) ([]mocks.MockServiceInterface, error) {
 				var services []mocks.MockServiceInterface
 
 				firstService := mocks.NewMockService()
 				services = append(services, firstService)
-				err := c.Provide(func () *mocks.MockService { return firstService })
+				err := c.RegisterSingletonInstance(firstService)
 				if err != nil {
 					return nil, err
 				}
 
 				secondService := mocks.NewMockService2ElectricBoogaloo()
 				services = append(services, secondService)
-				err = c.Provide(func () *mocks.MockService2ElectricBoogaloo { return secondService })
+				err = c.RegisterSingletonInstance(secondService)
 				if err != nil {
 					return nil, err
 				}
@@ -121,7 +121,7 @@ func testMediatorSendWithInstance(handlers []interface{}, t *testing.T) {
 
 func testMediatorSendWithFactory(
 	factories []interface{},
-	serviceProvider func(container *dig.Container) ([]mocks.MockServiceInterface, error),
+	serviceProvider func(container ioc.Container) ([]mocks.MockServiceInterface, error),
 	t *testing.T) {
 	var err error
 
@@ -246,11 +246,11 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 func setupMediator(
 	handlerInstances *[]interface{},
 	handlerFactories *[]interface{},
-	serviceProvider *func(container *dig.Container) ([]mocks.MockServiceInterface, error),
+	serviceProvider *func(container ioc.Container) ([]mocks.MockServiceInterface, error),
 	) (*Mediator, []mocks.MockServiceInterface, error) {
 	var err error
 
-	c := dig.New()
+	c := ioc.NewGolobbyContainer()
 	var services []mocks.MockServiceInterface
 	if serviceProvider != nil {
 		serviceProviderFn := *serviceProvider

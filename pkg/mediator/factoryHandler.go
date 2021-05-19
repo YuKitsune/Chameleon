@@ -3,36 +3,36 @@ package mediator
 import (
 	"errors"
 	"fmt"
-	"go.uber.org/dig"
+	"github.com/yukitsune/chameleon/pkg/ioc"
 	"reflect"
 )
 
 type factoryHandler struct {
-	container *dig.Container
+	container ioc.Container
 
 	handlerType reflect.Type
 	requestType reflect.Type
 
-	constructor interface{}
+	factory interface{}
 }
 
-func newFactoryHandler(container *dig.Container, constructor interface{}) (*factoryHandler, error) {
-	ctype := reflect.TypeOf(constructor)
-	if ctype == nil {
+func newFactoryHandler(container ioc.Container, factory interface{}) (*factoryHandler, error) {
+	factoryType := reflect.TypeOf(factory)
+	if factoryType == nil {
 		return nil, errors.New("can't provide an untyped nil")
 	}
-	if ctype.Kind() != reflect.Func {
-		return nil, errors.New(fmt.Sprintf("must provide constructor function, got %v (type %v)", constructor, ctype))
+	if factoryType.Kind() != reflect.Func {
+		return nil, errors.New(fmt.Sprintf("must provide factory function, got %v (type %v)", factory, factoryType))
 	}
 
-	handlerType := reflect.ValueOf(constructor).Type().Out(0)
+	handlerType := reflect.ValueOf(factory).Type().Out(0)
 	requestType, err := getRequestType(handlerType)
 	if err != nil {
 		return nil, err
 	}
 
 	// Todo: I'm not overly happy that we're mutating the container, but we need it's dependencies...
-	err = container.Provide(constructor)
+	err = container.RegisterTransientFactory(factory)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func newFactoryHandler(container *dig.Container, constructor interface{}) (*fact
 		container:   container,
 		handlerType: handlerType,
 		requestType: *requestType,
-		constructor: container,
+		factory:     factory,
 	}, nil
 }
 
@@ -74,7 +74,7 @@ func (h *factoryHandler) Invoke(r interface{}) error {
 			return method.Call(in)
 		})
 
-	err := h.container.Invoke(fn.Interface())
+	err := h.container.ResolveInScope(fn.Interface())
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,7 @@ import (
 	"github.com/yukitsune/chameleon/cmd"
 	"github.com/yukitsune/chameleon/internal/api"
 	"github.com/yukitsune/chameleon/internal/log"
-	"go.uber.org/dig"
+	"github.com/yukitsune/chameleon/pkg/ioc"
 	"gopkg.in/yaml.v2"
 	"os"
 )
@@ -80,7 +80,7 @@ func serve(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	err = container.Invoke(func(svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
+	err = container.ResolveInScope(func(svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
 
 		// Run our server in a goroutine so that it doesn't block.
 		errorChan := make(chan error, 1)
@@ -102,28 +102,28 @@ func serve(command *cobra.Command, args []string) error {
 	return nil
 }
 
-func setupContainer(cfg *ChameleonApiConfig) (*dig.Container, error) {
-	c := dig.New()
+func setupContainer(cfg *ChameleonApiConfig) (ioc.Container, error) {
+	c := ioc.NewGolobbyContainer()
 	var err error
 
 	// Configuration
-	err = c.Provide(func() *log.LogConfig { return cfg.Logging })
+	err = c.RegisterSingletonInstance(cfg.Logging)
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.Provide(func() *api.ApiConfig { return cfg.Api })
+	err = c.RegisterSingletonInstance(cfg.Api )
 	if err != nil {
 		return nil, err
 	}
 
 	// Services
-	err = c.Provide(cmd.MakeLogger)
+	err = c.RegisterTransientFactory(cmd.MakeLogger)
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.Provide(api.NewChameleonApiServer)
+	err = c.RegisterSingletonFactory(api.NewChameleonApiServer)
 	if err != nil {
 		return nil, err
 	}

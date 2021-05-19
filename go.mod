@@ -3,6 +3,7 @@ module github.com/yukitsune/chameleon
 go 1.16
 
 require (
+	github.com/golobby/container v1.3.0 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/sirupsen/logrus v1.8.1

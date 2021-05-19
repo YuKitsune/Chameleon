@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/yukitsune/chameleon/internal/api/handlers"
 	"github.com/yukitsune/chameleon/internal/log"
-	"go.uber.org/dig"
+	"github.com/yukitsune/chameleon/pkg/ioc"
 	"net/http"
 	"time"
 )
@@ -13,7 +13,7 @@ import (
 type ChameleonApiServer struct {
 	config    *ApiConfig
 	svr       *http.Server
-	container *dig.Container
+	container ioc.Container
 }
 
 func NewChameleonApiServer(config *ApiConfig, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
@@ -47,21 +47,21 @@ func (api *ChameleonApiServer) StartTLS() error {
 	return api.svr.ListenAndServeTLS(api.config.CertFile, api.config.KeyFile)
 }
 
-func makeContainer(logger log.ChameleonLogger) (*dig.Container, error) {
-	c := dig.New()
+func makeContainer(logger log.ChameleonLogger) (ioc.Container, error) {
+	c := ioc.NewGolobbyContainer()
 	var err error
 
-	err = c.Provide(func() log.ChameleonLogger { return logger })
+	err = c.RegisterSingletonInstance(logger)
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.Provide(handlers.NewValidateHandler)
+	err = c.RegisterTransientFactory(handlers.NewValidateHandler)
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.Provide(handlers.NewMailHandler)
+	err = c.RegisterTransientFactory(handlers.NewMailHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -69,17 +69,17 @@ func makeContainer(logger log.ChameleonLogger) (*dig.Container, error) {
 	return c, nil
 }
 
-func makeHandler(container *dig.Container) http.Handler {
+func makeHandler(container ioc.Container) http.Handler {
 	m := mux.NewRouter()
 
 	m.HandleFunc("/validate", func(writer http.ResponseWriter, request *http.Request) {
-		_ = container.Invoke(func(handler *handlers.ValidateHandler) {
+		_ = container.ResolveInScope(func(handler *handlers.ValidateHandler) {
 			handler.Handle(writer, request)
 		})
 	})
 
 	m.HandleFunc("/handle", func(writer http.ResponseWriter, request *http.Request) {
-		_ = container.Invoke(func(handler *handlers.MailHandler) {
+		_ = container.ResolveInScope(func(handler *handlers.MailHandler) {
 			handler.Handle(writer, request)
 		})
 	})

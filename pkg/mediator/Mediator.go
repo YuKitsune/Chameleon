@@ -3,7 +3,7 @@ package mediator
 import (
 	"fmt"
 	"github.com/yukitsune/chameleon/pkg/errors"
-	"go.uber.org/dig"
+	"github.com/yukitsune/chameleon/pkg/ioc"
 	"reflect"
 )
 
@@ -17,10 +17,10 @@ func (err *ErrHandlerNotFound) Error() string {
 
 type Mediator struct {
 	handlers []handler
-	container *dig.Container
+	container ioc.Container
 }
 
-func New(c *dig.Container) *Mediator {
+func New(c ioc.Container) *Mediator {
 	return &Mediator{
 		container: c,
 	}
