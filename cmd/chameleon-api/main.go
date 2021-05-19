@@ -112,7 +112,7 @@ func setupContainer(cfg *ChameleonApiConfig) (ioc.Container, error) {
 		return nil, err
 	}
 
-	err = c.RegisterSingletonInstance(cfg.Api )
+	err = c.RegisterSingletonInstance(cfg.Api)
 	if err != nil {
 		return nil, err
 	}

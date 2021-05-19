@@ -10,5 +10,6 @@ require (
 	github.com/spf13/cobra v1.1.3
 	go.uber.org/dig v1.10.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gorm.io/driver/postgres v1.1.0 // indirect
 	gorm.io/gorm v1.21.9 // indirect
 )

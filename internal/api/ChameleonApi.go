@@ -6,6 +6,8 @@ import (
 	"github.com/yukitsune/chameleon/internal/api/handlers"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/ioc"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 )
@@ -21,7 +23,7 @@ func NewChameleonApiServer(config *ApiConfig, logger log.ChameleonLogger) (*Cham
 		config: config,
 	}
 
-	c, err := makeContainer(logger)
+	c, err := makeContainer(config.Database, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -47,11 +49,25 @@ func (api *ChameleonApiServer) StartTLS() error {
 	return api.svr.ListenAndServeTLS(api.config.CertFile, api.config.KeyFile)
 }
 
-func makeContainer(logger log.ChameleonLogger) (ioc.Container, error) {
+func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Container, error) {
 	c := ioc.NewGolobbyContainer()
 	var err error
 
 	err = c.RegisterSingletonInstance(logger)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.RegisterSingletonInstance(dbConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.RegisterTransientFactory(func (cfg *DbConfig) *gorm.DB {
+		// Todo: Handle error
+		db, _ := gorm.Open(postgres.Open(cfg.ConnectionString()), &gorm.Config{})
+		return db
+	})
 	if err != nil {
 		return nil, err
 	}
