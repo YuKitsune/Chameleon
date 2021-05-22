@@ -8,4 +8,5 @@ type Container interface {
 	RegisterTransientFactory(interface{}) error
 
 	ResolveInScope(interface{}) error
+	ResolveInScopeWithResponse(interface{}) (interface{}, error)
 }

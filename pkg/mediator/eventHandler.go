@@ -1,7 +1,6 @@
 package mediator
 
 import (
-	"fmt"
 	"reflect"
 )
 
@@ -23,8 +22,6 @@ type eventHandler interface {
 }
 
 func getHandlerMethodAndEventType(v interface{}) (*reflect.Value, *reflect.Type, error) {
-
-	fmt.Printf("%T", v)
 	method := reflect.ValueOf(v).MethodByName(InternalHandlerFuncName)
 	numIn := method.Type().NumIn()
 	if numIn != 1 {
@@ -40,7 +37,7 @@ func getHandlerMethodAndEventType(v interface{}) (*reflect.Value, *reflect.Type,
 	return &method, &eventType, nil
 }
 
-func getEventType(handlerType reflect.Type) (*reflect.Type, error) {
+func getEventOrRequestType(handlerType reflect.Type) (*reflect.Type, error) {
 
 	method, exists := handlerType.MethodByName(InternalHandlerFuncName)
 	if !exists {
@@ -52,12 +49,7 @@ func getEventType(handlerType reflect.Type) (*reflect.Type, error) {
 		return nil, &ErrHandlerMethodNotFound{}
 	}
 
-	// first arg is the received, second is the event
+	// first arg is the receiver, second is the event
 	eventType := method.Type.In(1)
-	returnsError := method.Type.Out(0).Name() == "error"
-	if !returnsError {
-		return nil, &ErrHandlerMethodNotFound{}
-	}
-
 	return &eventType, nil
 }

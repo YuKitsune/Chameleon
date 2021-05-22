@@ -9,7 +9,7 @@ func NewMockHandlerWithService(svc *MockService) (*MockEventHandlerWithService, 
 }
 
 func (h *MockEventHandlerWithService) Handle(r *MockEvent) error {
-	return h.service.DoAThing(r)
+	return h.service.DoAThingWithAnEvent(r)
 }
 
 type MockEventHandlerWithService2ElectricBoogaloo struct {
@@ -21,5 +21,5 @@ func NewMockHandlerWithService2ElectricBoogaloo(svc *MockService2ElectricBoogalo
 }
 
 func (h *MockEventHandlerWithService2ElectricBoogaloo) Handle(r *MockEvent) error {
-	return h.service.DoAThing(r)
+	return h.service.DoAThingWithAnEvent(r)
 }

@@ -17,6 +17,7 @@ func (err *ErrHandlerNotFound) Error() string {
 
 type Mediator struct {
 	eventHandlers []eventHandler
+	requestHandlers []requestHandler
 	container ioc.Container
 }
 
@@ -46,6 +47,50 @@ func (m *Mediator) AddEventHandlerFactory(ctor interface{}) error {
 	return nil
 }
 
+func (m *Mediator) AddRequestHandlerInstance(v interface{}) error {
+	h, err := newInstanceRequestHandler(v)
+	if err != nil {
+		return err
+	}
+
+	if m.requestHandlerExists(h.GetRequestType()) {
+		return AlreadyRegistered(h.GetRequestType())
+	}
+
+	m.requestHandlers = append(m.requestHandlers, h)
+	return nil
+}
+
+func (m *Mediator) AddRequestHandlerFactory(ctor interface{}) error {
+	h, err := newFactoryRequestHandler(m.container, ctor)
+	if err != nil {
+		return err
+	}
+
+	if m.requestHandlerExists(h.GetRequestType()) {
+		return AlreadyRegistered(h.GetRequestType())
+	}
+
+	m.requestHandlers = append(m.requestHandlers, h)
+	return nil
+}
+
+func (m *Mediator) Send(r interface{}) (interface{}, error) {
+
+	handler := m.findRequestHandler(r)
+
+	if handler == nil {
+		return nil, nil
+	}
+
+	res, err := handler.Invoke(r)
+	if err != nil {
+		wrappedErr := NewError(handler.GetHandlerType(), err)
+		return nil, wrappedErr
+	}
+
+	return res, nil
+}
 
 func (m *Mediator) Publish(r interface{}) error {
 
@@ -77,4 +122,26 @@ func (m *Mediator) findEventHandlers(r interface{}) []eventHandler {
 	}
 
 	return handlers
+}
+
+func (m *Mediator) findRequestHandler(r interface{}) requestHandler {
+	requestType := reflect.TypeOf(r)
+
+	for _, h := range m.requestHandlers {
+		if h.GetRequestType() == requestType {
+			return h
+		}
+	}
+
+	return nil
+}
+
+func (m *Mediator) requestHandlerExists(rt reflect.Type) bool {
+	for _, handler := range m.requestHandlers {
+		if handler.GetRequestType() == rt {
+			return true
+		}
+	}
+
+	return false
 }
