@@ -16,13 +16,13 @@ func (err *ErrHandlerMethodNotFound) Error() string {
 	return "could not find handler method"
 }
 
-type handler interface {
+type eventHandler interface {
 	Invoke(r interface{}) error
 	GetHandlerType() reflect.Type
-	GetRequestType() reflect.Type
+	GetEventType() reflect.Type
 }
 
-func getHandlerMethodAndRequestType(v interface{}) (*reflect.Value, *reflect.Type, error) {
+func getHandlerMethodAndEventType(v interface{}) (*reflect.Value, *reflect.Type, error) {
 
 	fmt.Printf("%T", v)
 	method := reflect.ValueOf(v).MethodByName(InternalHandlerFuncName)
@@ -31,16 +31,16 @@ func getHandlerMethodAndRequestType(v interface{}) (*reflect.Value, *reflect.Typ
 		return nil, nil, &ErrHandlerMethodNotFound{}
 	}
 
-	requestType := method.Type().In(0)
+	eventType := method.Type().In(0)
 	returnsError := method.Type().Out(0).Name() == "error"
 	if !returnsError {
 		return nil, nil, &ErrHandlerMethodNotFound{}
 	}
 
-	return &method, &requestType, nil
+	return &method, &eventType, nil
 }
 
-func getRequestType(handlerType reflect.Type) (*reflect.Type, error) {
+func getEventType(handlerType reflect.Type) (*reflect.Type, error) {
 
 	method, exists := handlerType.MethodByName(InternalHandlerFuncName)
 	if !exists {
@@ -53,11 +53,11 @@ func getRequestType(handlerType reflect.Type) (*reflect.Type, error) {
 	}
 
 	// first arg is the received, second is the event
-	requestType := method.Type.In(1)
+	eventType := method.Type.In(1)
 	returnsError := method.Type.Out(0).Name() == "error"
 	if !returnsError {
 		return nil, &ErrHandlerMethodNotFound{}
 	}
 
-	return &requestType, nil
+	return &eventType, nil
 }

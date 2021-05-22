@@ -34,6 +34,10 @@ build: ## Builds all programs and places their binaries in the bin/ directory
 	mkdir -p bin
 	go build -ldflags="$(LD_FLAGS)" -o ./bin/  ./cmd/...
 
+.PHONY: test
+test: ## Runs all tests
+	go test ./...
+
 .PHONY: clean
 clean: ## Removes the bin/ directory
 	rm -rf bin

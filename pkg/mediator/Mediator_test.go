@@ -15,11 +15,11 @@ func TestMediator_Send(t *testing.T) {
 		c := ioc.NewGolobbyContainer()
 		m := New(c)
 
-		r := mocks.MockRequest{
+		r := mocks.MockEvent{
 			Value: t.Name(),
 		}
 
-		err := m.Send(r)
+		err := m.Publish(r)
 		if err != nil {
 			failOnError(t, err, "Send() should not return an error")
 			return
@@ -27,14 +27,14 @@ func TestMediator_Send(t *testing.T) {
 	})
 
 	t.Run("Single Handler Instance", func (t *testing.T) {
-		testMediatorSendWithInstance([]interface{} { &mocks.MockHandler{} }, t)
+		testMediatorSendWithInstance([]interface{} { &mocks.MockNormalEventHandler{} }, t)
 	})
 
 	t.Run("Multiple Handler Instances", func (t *testing.T) {
 		testMediatorSendWithInstance(
 			[]interface{} {
-				&mocks.MockHandler{},
-				&mocks.MockHandler2ElectricBoogaloo{},
+				&mocks.MockNormalEventHandler{},
+				&mocks.MockNormalEventHandler2ElectricBoogaloo{},
 			},
 			t)
 	})
@@ -93,19 +93,19 @@ func testMediatorSendWithInstance(handlers []interface{}, t *testing.T) {
 		failOnError(t, err, "setting up mediator should not fail")
 	}
 
-	r := &mocks.MockRequest{
+	r := &mocks.MockEvent{
 		Value: t.Name(),
 	}
 
-	err = m.Send(r)
+	err = m.Publish(r)
 	if err != nil {
 		failOnError(t, err, "Send() should not return an error")
 		return
 	}
 
 	for _, requestHandler := range handlers {
-		h := requestHandler.(mocks.MockRequestHandler)
-		receivedRequest := h.GetReceivedRequest()
+		h := requestHandler.(mocks.MockEventHandler)
+		receivedRequest := h.GetReceivedEvent()
 		if receivedRequest == nil {
 			t.Logf("Expected %T, found nil", r)
 			t.Fail()
@@ -133,11 +133,11 @@ func testMediatorSendWithFactory(
 		failOnError(t, err, "setting up mediator should not fail")
 	}
 
-	r := &mocks.MockRequest{
+	r := &mocks.MockEvent{
 		Value: t.Name(),
 	}
 
-	err = m.Send(r)
+	err = m.Publish(r)
 	if err != nil {
 		failOnError(t, err, "Send() should not return an error")
 		return
@@ -162,7 +162,7 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 
 	t.Run("Single Handler Instance", func (t *testing.T) {
 		instances := &[]interface {} {
-			&mocks.MockHandlerThatAlwaysFails{},
+			&mocks.MockEventHandlerThatAlwaysFails{},
 		}
 		m, _, err := setupMediator(
 			instances,
@@ -173,17 +173,17 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 			return
 		}
 
-		r := &mocks.MockRequest{
+		r := &mocks.MockEvent{
 			Value: t.Name(),
 		}
-		sendErr := m.Send(r)
+		sendErr := m.Publish(r)
 		testErrorIsUseful(sendErr, instances, nil, t)
 	})
 
 	t.Run("Multiple Handler Instances", func (t *testing.T) {
 		instances := &[]interface {} {
-			&mocks.MockHandlerThatAlwaysFails{},
-			&mocks.MockHandlerThatAlwaysFails2ElectricBoogaloo{},
+			&mocks.MockEventHandlerThatAlwaysFails{},
+			&mocks.MockEventHandlerThatAlwaysFails2ElectricBoogaloo{},
 		}
 		m, _, err := setupMediator(
 			instances,
@@ -194,16 +194,16 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 			return
 		}
 
-		r := &mocks.MockRequest{
+		r := &mocks.MockEvent{
 			Value: t.Name(),
 		}
-		sendErr := m.Send(r)
+		sendErr := m.Publish(r)
 		testErrorIsUseful(sendErr, instances, nil, t)
 	})
 
 	t.Run("Single Handler Factory", func (t *testing.T) {
 		factories := &[]interface{} {
-			func() *mocks.MockHandlerThatAlwaysFails { return &mocks.MockHandlerThatAlwaysFails{} },
+			func() *mocks.MockEventHandlerThatAlwaysFails { return &mocks.MockEventHandlerThatAlwaysFails{} },
 		}
 		m, _, err := setupMediator(
 			nil,
@@ -214,17 +214,17 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 			return
 		}
 
-		r := &mocks.MockRequest{
+		r := &mocks.MockEvent{
 			Value: t.Name(),
 		}
-		sendErr := m.Send(r)
+		sendErr := m.Publish(r)
 		testErrorIsUseful(sendErr, nil, factories, t)
 	})
 
 	t.Run("Multiple Handler Factories", func (t *testing.T) {
 		factories := &[]interface{} {
-			func() *mocks.MockHandlerThatAlwaysFails { return &mocks.MockHandlerThatAlwaysFails{} },
-			func() *mocks.MockHandlerThatAlwaysFails2ElectricBoogaloo { return &mocks.MockHandlerThatAlwaysFails2ElectricBoogaloo{} },
+			func() *mocks.MockEventHandlerThatAlwaysFails { return &mocks.MockEventHandlerThatAlwaysFails{} },
+			func() *mocks.MockEventHandlerThatAlwaysFails2ElectricBoogaloo { return &mocks.MockEventHandlerThatAlwaysFails2ElectricBoogaloo{} },
 		}
 		m, _, err := setupMediator(
 			nil,
@@ -235,10 +235,10 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 			return
 		}
 
-		r := &mocks.MockRequest{
+		r := &mocks.MockEvent{
 			Value: t.Name(),
 		}
-		sendErr := m.Send(r)
+		sendErr := m.Publish(r)
 		testErrorIsUseful(sendErr, nil, factories, t)
 	})
 }
@@ -265,7 +265,7 @@ func setupMediator(
 	if handlerInstances != nil {
 		hs := *handlerInstances
 		for _, h := range hs {
-			err = m.AddHandlerInstance(h)
+			err = m.AddEventHandlerInstance(h)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -275,7 +275,7 @@ func setupMediator(
 	if handlerFactories != nil {
 		hs := *handlerFactories
 		for _, h := range hs {
-			err = m.AddHandlerFactory(h)
+			err = m.AddEventHandlerFactory(h)
 			if err != nil {
 				return nil, nil, err
 			}

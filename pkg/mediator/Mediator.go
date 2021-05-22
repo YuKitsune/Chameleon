@@ -16,7 +16,7 @@ func (err *ErrHandlerNotFound) Error() string {
 }
 
 type Mediator struct {
-	handlers []handler
+	eventHandlers []eventHandler
 	container ioc.Container
 }
 
@@ -26,29 +26,30 @@ func New(c ioc.Container) *Mediator {
 	}
 }
 
-func (m *Mediator) AddHandlerInstance(v interface{}) error {
-	h, err := newInstanceHandler(v)
+func (m *Mediator) AddEventHandlerInstance(v interface{}) error {
+	h, err := newInstanceEventHandler(v)
 	if err != nil {
 		return err
 	}
 
-	m.handlers = append(m.handlers, h)
+	m.eventHandlers = append(m.eventHandlers, h)
 	return nil
 }
 
-func (m *Mediator) AddHandlerFactory(ctor interface{}) error {
-	h, err := newFactoryHandler(m.container, ctor)
+func (m *Mediator) AddEventHandlerFactory(ctor interface{}) error {
+	h, err := newFactoryEventHandler(m.container, ctor)
 	if err != nil {
 		return err
 	}
 
-	m.handlers = append(m.handlers, h)
+	m.eventHandlers = append(m.eventHandlers, h)
 	return nil
 }
 
-func (m *Mediator) Send(r interface{}) error {
 
-	handlers := m.findHandlers(r)
+func (m *Mediator) Publish(r interface{}) error {
+
+	handlers := m.findEventHandlers(r)
 	var errs errors.Errors
 	for _, h := range handlers {
 		err := h.Invoke(r)
@@ -65,12 +66,12 @@ func (m *Mediator) Send(r interface{}) error {
 	return nil
 }
 
-func (m *Mediator) findHandlers(r interface{}) []handler {
-	var handlers []handler
+func (m *Mediator) findEventHandlers(r interface{}) []eventHandler {
+	var handlers []eventHandler
 
 	requestType := reflect.TypeOf(r)
-	for _, h := range m.handlers {
-		if h.GetRequestType() == requestType {
+	for _, h := range m.eventHandlers {
+		if h.GetEventType() == requestType {
 			handlers = append(handlers, h)
 		}
 	}

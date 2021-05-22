@@ -7,16 +7,16 @@ import (
 	"reflect"
 )
 
-type factoryHandler struct {
+type factoryEventHandler struct {
 	container ioc.Container
 
 	handlerType reflect.Type
-	requestType reflect.Type
+	eventType reflect.Type
 
 	factory interface{}
 }
 
-func newFactoryHandler(container ioc.Container, factory interface{}) (*factoryHandler, error) {
+func newFactoryEventHandler(container ioc.Container, factory interface{}) (*factoryEventHandler, error) {
 	factoryType := reflect.TypeOf(factory)
 	if factoryType == nil {
 		return nil, errors.New("can't provide an untyped nil")
@@ -26,7 +26,7 @@ func newFactoryHandler(container ioc.Container, factory interface{}) (*factoryHa
 	}
 
 	handlerType := reflect.ValueOf(factory).Type().Out(0)
-	requestType, err := getRequestType(handlerType)
+	eventType, err := getEventType(handlerType)
 	if err != nil {
 		return nil, err
 	}
@@ -37,15 +37,15 @@ func newFactoryHandler(container ioc.Container, factory interface{}) (*factoryHa
 		return nil, err
 	}
 
-	return &factoryHandler{
+	return &factoryEventHandler{
 		container:   container,
 		handlerType: handlerType,
-		requestType: *requestType,
+		eventType: *eventType,
 		factory:     factory,
 	}, nil
 }
 
-func (h *factoryHandler) Invoke(r interface{}) error {
+func (h *factoryEventHandler) Invoke(r interface{}) error {
 
 	// Make the function type that we pass into our container to resolve the handler
 	// First type is the receiver, the rest are the args
@@ -60,13 +60,13 @@ func (h *factoryHandler) Invoke(r interface{}) error {
 
 			// Get the handlers instance
 			handlerInstance := args[0]
-			method, requestType, err := getHandlerMethodAndRequestType(handlerInstance.Interface())
+			method, eventType, err := getHandlerMethodAndEventType(handlerInstance.Interface())
 			if err != nil {
 				return []reflect.Value {reflect.ValueOf(err)}
 			}
 
 			// Ensure the handler we got can handle the request we've received
-			if *requestType != reflect.TypeOf(r) {
+			if *eventType != reflect.TypeOf(r) {
 				return []reflect.Value {reflect.ValueOf(ErrHandlerMethodNotFound{})}
 			}
 
@@ -82,10 +82,10 @@ func (h *factoryHandler) Invoke(r interface{}) error {
 	return nil
 }
 
-func (h *factoryHandler) GetRequestType() reflect.Type {
-	return h.requestType
+func (h *factoryEventHandler) GetEventType() reflect.Type {
+	return h.eventType
 }
 
-func (h *factoryHandler) GetHandlerType() reflect.Type {
+func (h *factoryEventHandler) GetHandlerType() reflect.Type {
 	return h.handlerType
 }
