@@ -12,6 +12,8 @@ func (h *MockEventHandlerWithService) Handle(r *MockEvent) error {
 	return h.service.DoAThingWithAnEvent(r)
 }
 
+// Need a second one so we can register two at once without a collision
+
 type MockEventHandlerWithService2ElectricBoogaloo struct {
 	service *MockService2ElectricBoogaloo
 }

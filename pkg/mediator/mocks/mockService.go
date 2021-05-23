@@ -1,10 +1,5 @@
 package mocks
 
-type MockServiceInterface interface {
-	GetReceivedEvent() *MockEvent
-	GetReceivedRequest() *MockRequest
-}
-
 type MockService struct {
 	ReceivedEvent *MockEvent
 	ReceivedRequest *MockRequest
@@ -31,6 +26,8 @@ func (m *MockService) GetReceivedEvent() *MockEvent {
 func (m *MockService) GetReceivedRequest() *MockRequest {
 	return m.ReceivedRequest
 }
+
+// Need a second one so we can register two at once without a collision
 
 type MockService2ElectricBoogaloo struct {
 	ReceivedEvent *MockEvent

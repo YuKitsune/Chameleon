@@ -4,6 +4,6 @@ type MockEvent struct {
 	Value string
 }
 
-type MockEventHandler interface {
+type EventRecipient interface {
 	GetReceivedEvent() *MockEvent
 }

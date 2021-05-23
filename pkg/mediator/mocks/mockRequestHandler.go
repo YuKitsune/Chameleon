@@ -1,16 +1,12 @@
 package mocks
 
-type MockNormalRequestHandler struct {
+type MockRequestHandler struct {
 	ReceivedRequest *MockRequest
 	Response *MockResponse
 }
 
-func (h *MockNormalRequestHandler) Handle(e *MockRequest) (*MockResponse, error) {
+func (h *MockRequestHandler) Handle(e *MockRequest) (*MockResponse, error) {
 	h.ReceivedRequest = e
 	h.Response = &MockResponse{Value: e.Value}
 	return h.Response, nil
-}
-
-func (h *MockNormalRequestHandler) GetReceivedRequest() *MockResponse {
-	return h.Response
 }

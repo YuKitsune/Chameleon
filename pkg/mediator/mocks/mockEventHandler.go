@@ -1,27 +1,29 @@
 package mocks
 
-type MockNormalEventHandler struct {
+type MockEventHandler struct {
 	ReceivedEvent *MockEvent
 }
 
-func (h *MockNormalEventHandler) Handle(e *MockEvent) error {
+func (h *MockEventHandler) Handle(e *MockEvent) error {
 	h.ReceivedEvent = e
 	return nil
 }
 
-func (h *MockNormalEventHandler) GetReceivedEvent() *MockEvent {
+func (h *MockEventHandler) GetReceivedEvent() *MockEvent {
 	return h.ReceivedEvent
 }
 
-type MockNormalEventHandler2ElectricBoogaloo struct {
+// Need a second one so we can register two at once without a collision
+
+type MockEventHandler2ElectricBoogaloo struct {
 	ReceivedEvent *MockEvent
 }
 
-func (h *MockNormalEventHandler2ElectricBoogaloo) Handle(e *MockEvent) error {
+func (h *MockEventHandler2ElectricBoogaloo) Handle(e *MockEvent) error {
 	h.ReceivedEvent = e
 	return nil
 }
 
-func (h *MockNormalEventHandler2ElectricBoogaloo) GetReceivedEvent() *MockEvent {
+func (h *MockEventHandler2ElectricBoogaloo) GetReceivedEvent() *MockEvent {
 	return h.ReceivedEvent
 }
