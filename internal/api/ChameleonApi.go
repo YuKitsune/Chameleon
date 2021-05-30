@@ -88,17 +88,27 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Containe
 func makeHandler(container ioc.Container) http.Handler {
 	m := mux.NewRouter()
 
-	m.HandleFunc("/validate", func(writer http.ResponseWriter, request *http.Request) {
-		_ = container.ResolveInScope(func(handler *handlers.ValidateHandler) {
-			handler.Handle(writer, request)
-		})
-	})
+	m.HandleFunc(
+		"/validate",
+		handlers.NewHttpHandler(
+			container,
+			func (c ioc.Container, req interface{}) error {
+				return c.ResolveInScope(func (h *handlers.ValidateHandler) error {
+					return h.Handle(req)
+				})
+			},
+		).HandleHttp)
 
-	m.HandleFunc("/handle", func(writer http.ResponseWriter, request *http.Request) {
-		_ = container.ResolveInScope(func(handler *handlers.MailHandler) {
-			handler.Handle(writer, request)
-		})
-	})
+	m.HandleFunc(
+		"/handle",
+		handlers.NewHttpHandler(
+			container,
+			func (c ioc.Container, req interface{}) error {
+				return c.ResolveInScope(func (h *handlers.MailHandler) error {
+					return h.Handle(req)
+				})
+			},
+		).HandleHttp)
 
 	return m
 }

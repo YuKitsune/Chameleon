@@ -1,5 +1,5 @@
 package mocks
 
-type MockRequest struct {
+type MockResponse struct {
 	Value string
 }

@@ -41,8 +41,19 @@ func (g GolobbyContainer) RegisterTransientFactory(v interface{}) error {
 func (g GolobbyContainer) ResolveInScope(v interface{}) error {
 	var err error
 	errAddr := &err
-	g.c.Make(wrapFunc(v, errAddr))
+	g.c.Make(wrapFunc(v, nil, errAddr))
 	return err
+}
+
+func (g GolobbyContainer) ResolveInScopeWithResponse(v interface{}) (interface{}, error) {
+	var res interface{}
+	resAddr := &res
+
+	var err error
+	errAddr := &err
+
+	g.c.Make(wrapFunc(v, resAddr, errAddr))
+	return res, err
 }
 
 func makeFuncThatReturns(v interface{}) interface{} {
@@ -58,7 +69,7 @@ func makeFuncThatReturns(v interface{}) interface{} {
 }
 
 
-func wrapFunc(v interface{}, err *error) interface{} {
+func wrapFunc(v interface{}, res *interface{}, err *error) interface{} {
 	originalFnType := reflect.TypeOf(v)
 	originalFnValue := reflect.ValueOf(v)
 
@@ -81,7 +92,21 @@ func wrapFunc(v interface{}, err *error) interface{} {
 
 			// If we have an error, then assign it
 			if len(out) > 0 {
-				maybeError := out[0]
+				var errIndex int
+				if len(out) == 1 {
+					errIndex = 0
+				} else if len(out) == 2 {
+					errIndex = 1
+					if res != nil {
+						maybeRes := out[0]
+						if !maybeRes.IsNil() {
+							actualRes := maybeRes.Interface()
+							*res = actualRes
+						}
+					}
+				}
+
+				maybeError := out[errIndex]
 				if !maybeError.IsNil() {
 					if actualError, ok := maybeError.Interface().(error); ok {
 						*err = actualError
