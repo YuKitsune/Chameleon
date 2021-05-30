@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"github.com/yukitsune/chameleon/internal/log"
-	"net/http"
 )
 
 type MailHandler struct {
@@ -14,6 +13,7 @@ func NewMailHandler(logger log.ChameleonLogger) *MailHandler {
 	return &MailHandler{logger: logger}
 }
 
-func (handler *MailHandler) Handle(w http.ResponseWriter, r *http.Request) {
+func (handler *MailHandler) Handle(r interface{}) error {
 	handler.logger.Info("Handling mail")
+	return nil
 }
