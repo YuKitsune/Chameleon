@@ -1,12 +1,13 @@
-package handlers
+package routers
 
 import (
 	"encoding/json"
 	"net/http"
+	"reflect"
 )
 
-type HttpHandlerWrapper struct {
-	inner Handler
+type HttpWrapper struct {
+	wrappedMethod reflect.Method
 }
 
 func NewHttpHandler(inner Handler) HttpHandlerWrapper {
@@ -15,11 +16,7 @@ func NewHttpHandler(inner Handler) HttpHandlerWrapper {
 	}
 }
 
-func (h HttpHandlerWrapper) Handle(v interface{}) (interface{}, error) {
-	return h.inner.Handle(v)
-}
-
-func (h HttpHandlerWrapper) HandleHttp(w http.ResponseWriter, r *http.Request) {
+func (h HttpWrapper) HandleHttp(w http.ResponseWriter, r *http.Request) {
 
 	// Read the body as JSON
 	var bodyBytes []byte
@@ -37,6 +34,7 @@ func (h HttpHandlerWrapper) HandleHttp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle the request
+	h.wrappedMethod.Func.Call()
 	res, err := h.Handle(req)
 
 	// Todo: Any errors in this block should be added to the one from the above Handle call
@@ -52,4 +50,8 @@ func (h HttpHandlerWrapper) HandleHttp(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 	}
+}
+
+func makeFn() reflect.Method {
+
 }
