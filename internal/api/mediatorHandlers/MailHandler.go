@@ -1,4 +1,4 @@
-package handlers
+package mediatorHandlers
 
 import (
 	"github.com/yukitsune/chameleon/internal/log"

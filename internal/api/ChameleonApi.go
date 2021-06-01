@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gorilla/mux"
 	"github.com/yukitsune/chameleon/internal/api/handlers"
+	"github.com/yukitsune/chameleon/internal/api/mediatorHandlers"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/ioc"
 	"gorm.io/driver/postgres"
@@ -72,12 +73,12 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Containe
 		return nil, err
 	}
 
-	err = c.RegisterTransientFactory(handlers.NewValidateHandler)
+	err = c.RegisterTransientFactory(mediatorHandlers.NewValidateHandler)
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.RegisterTransientFactory(handlers.NewMailHandler)
+	err = c.RegisterTransientFactory(mediatorHandlers.NewMailHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -88,27 +89,23 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Containe
 func makeHandler(container ioc.Container) http.Handler {
 	m := mux.NewRouter()
 
+	//m.HandleFunc(
+	//	"/validate",
+	//	handlers.NewHttpHandler(
+	//		container,
+	//		func (c ioc.Container, req interface{}) error {
+	//			return c.ResolveInScope(func (h *handlers.ValidateHandler) error {
+	//				return h.Handle(req)
+	//			})
+	//		},
+	//	).HandleHttp)
+
 	m.HandleFunc(
 		"/validate",
 		handlers.NewHttpHandler(
-			container,
-			func (c ioc.Container, req interface{}) error {
-				return c.ResolveInScope(func (h *handlers.ValidateHandler) error {
-					return h.Handle(req)
-				})
-			},
-		).HandleHttp)
-
-	m.HandleFunc(
-		"/handle",
-		handlers.NewHttpHandler(
-			container,
-			func (c ioc.Container, req interface{}) error {
-				return c.ResolveInScope(func (h *handlers.MailHandler) error {
-					return h.Handle(req)
-				})
-			},
-		).HandleHttp)
+			handlers.NewTypeCastHandler(
+				func (vReq interface{}) interface{} { return vReq.(*mediatorHandlers.ValidateRequest) },
+				handlers.NewMediatorHandler(container))).HandleHttp)
 
 	return m
 }

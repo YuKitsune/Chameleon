@@ -2,26 +2,21 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/yukitsune/chameleon/pkg/ioc"
 	"net/http"
 )
 
-type handlerFunc func (ioc.Container, interface{}) error
-
 type HttpHandlerWrapper struct {
-	container ioc.Container
-	handlerFn handlerFunc
+	inner Handler
 }
 
-func NewHttpHandler(container ioc.Container, handlerFn handlerFunc) HttpHandlerWrapper {
+func NewHttpHandler(inner Handler) HttpHandlerWrapper {
 	return HttpHandlerWrapper{
-		container: container,
-		handlerFn: handlerFn,
+		inner: inner,
 	}
 }
 
-func (h HttpHandlerWrapper) Handle(v interface{}) error {
-	return h.handlerFn(h.container, v)
+func (h HttpHandlerWrapper) Handle(v interface{}) (interface{}, error) {
+	return h.inner.Handle(v)
 }
 
 func (h HttpHandlerWrapper) HandleHttp(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +37,15 @@ func (h HttpHandlerWrapper) HandleHttp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Handle the request
-	err = h.Handle(req)
+	res, err := h.Handle(req)
+
+	// Todo: Any errors in this block should be added to the one from the above Handle call
+	if res != nil {
+		resBytes, err := json.Marshal(res)
+		if err != nil {
+			_, err = w.Write(resBytes)
+		}
+	}
 
 	// Todo: Handle different error types
 	switch err.(type) {

@@ -1,9 +1,14 @@
-package handlers
+package mediatorHandlers
 
 import (
 	"github.com/yukitsune/chameleon/internal/log"
 	"gorm.io/gorm"
 )
+
+type ValidateRequest struct {
+	Sender string
+	Recipient string
+}
 
 type ValidateHandler struct {
 	// Todo: Dependencies go here
@@ -18,6 +23,6 @@ func NewValidateHandler(db *gorm.DB, logger log.ChameleonLogger) *ValidateHandle
 	}
 }
 
-func (handler *ValidateHandler) Handle(r interface{}) error {
+func (handler *ValidateHandler) Handle(req *ValidateRequest) error {
 	return nil
 }
