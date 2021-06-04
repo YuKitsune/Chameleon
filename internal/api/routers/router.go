@@ -2,56 +2,63 @@ package routers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
-	"reflect"
 )
 
-type HttpWrapper struct {
-	wrappedMethod reflect.Method
+type MissingParameterError struct {
+	parameterName string
 }
 
-func NewHttpHandler(inner Handler) HttpHandlerWrapper {
-	return HttpHandlerWrapper{
-		inner: inner,
+func MissingParameterErr(parameterName string) *MissingParameterError {
+	return &MissingParameterError {
+		parameterName: parameterName,
 	}
 }
 
-func (h HttpWrapper) HandleHttp(w http.ResponseWriter, r *http.Request) {
+func (e *MissingParameterError) Error() string {
+	return fmt.Sprintf("could not find parameter \"%s\"", e.parameterName)
+}
 
-	// Read the body as JSON
+func getRequest(r *http.Request) (v interface{}, err error) {
 	var bodyBytes []byte
-	_, err := r.Body.Read(bodyBytes)
+	_, err = r.Body.Read(bodyBytes)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		return nil, err
+	}
+
+	err = json.Unmarshal(bodyBytes, &v)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func writeResponse(w http.ResponseWriter, res interface{}, status int) {
+
+	resBytes, err := json.Marshal(res)
+	if err != nil {
+		writeError(w, err)
 		return
 	}
 
-	var req interface{}
-	err = json.Unmarshal(bodyBytes, &req)
+	w.WriteHeader(status)
+	_, err = w.Write(resBytes)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		writeError(w, err)
 		return
 	}
+}
+func writeEmptyResponse(w http.ResponseWriter, status int) {
+	w.WriteHeader(status)
+}
 
-	// Handle the request
-	h.wrappedMethod.Func.Call()
-	res, err := h.Handle(req)
+func writeError(w http.ResponseWriter, err error) {
 
-	// Todo: Any errors in this block should be added to the one from the above Handle call
-	if res != nil {
-		resBytes, err := json.Marshal(res)
-		if err != nil {
-			_, err = w.Write(resBytes)
-		}
-	}
-
-	// Todo: Handle different error types
+	// Todo: Handle different kinds of errors
 	switch err.(type) {
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-}
-
-func makeFn() reflect.Method {
-
 }

@@ -7,6 +7,8 @@ type Container interface {
 	RegisterTransientInstance(interface{}) error
 	RegisterTransientFactory(interface{}) error
 
+	RegisterModule(Module) error
+
 	ResolveInScope(interface{}) error
 	ResolveInScopeWithResponse(interface{}) (interface{}, error)
 }

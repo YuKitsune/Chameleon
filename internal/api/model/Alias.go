@@ -21,3 +21,20 @@ func (a *Alias) SenderIsAllowed(sender string) (*bool, error) {
 	match := r.MatchString(sender)
 	return &match, nil
 }
+
+type CreateAliasRequest struct {
+	Alias
+}
+
+type GetAliasRequest struct {
+	Sender string
+	Recipient string
+}
+
+type UpdateAliasRequest struct {
+	Alias
+}
+
+type DeleteAliasRequest struct {
+	Alias
+}

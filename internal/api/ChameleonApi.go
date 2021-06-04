@@ -3,8 +3,7 @@ package api
 import (
 	"context"
 	"github.com/gorilla/mux"
-	"github.com/yukitsune/chameleon/internal/api/handlers"
-	"github.com/yukitsune/chameleon/internal/api/mediatorHandlers"
+	"github.com/yukitsune/chameleon/internal/api/handlers/alias"
 	"github.com/yukitsune/chameleon/internal/api/routers"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/ioc"
@@ -74,12 +73,7 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Containe
 		return nil, err
 	}
 
-	err = c.RegisterTransientFactory(mediatorHandlers.NewValidateHandler)
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.RegisterTransientFactory(mediatorHandlers.NewMailHandler)
+	err = c.RegisterModule(alias.NewAliasHandlerModule())
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +84,7 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Containe
 func makeHandler(container ioc.Container) http.Handler {
 	m := mux.NewRouter()
 
-	routers.NewAliasRouter(m.Path("/alias").Subrouter())
+	routers.NewAliasRouter(m.Path("/alias").Subrouter(), container)
 
 	return m
 }

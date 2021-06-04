@@ -38,6 +38,10 @@ func (g GolobbyContainer) RegisterTransientFactory(v interface{}) error {
 	return nil
 }
 
+func (g GolobbyContainer) RegisterModule(m Module) error {
+	return m.Register(g)
+}
+
 func (g GolobbyContainer) ResolveInScope(v interface{}) error {
 	var err error
 	errAddr := &err
