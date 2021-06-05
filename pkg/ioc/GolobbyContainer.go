@@ -11,7 +11,7 @@ type GolobbyContainer struct {
 	c *container.Container
 }
 
-func NewGolobbyContainer() *GolobbyContainer {
+func NewGolobbyContainer() Container {
 	c := container.NewContainer()
 	return &GolobbyContainer{c: &c}
 }
@@ -36,6 +36,10 @@ func (g GolobbyContainer) RegisterTransientInstance(v interface{}) error {
 func (g GolobbyContainer) RegisterTransientFactory(v interface{}) error {
 	g.c.Transient(v)
 	return nil
+}
+
+func (g GolobbyContainer) RegisterModule(m Module) error {
+	return m.Register(g)
 }
 
 func (g GolobbyContainer) ResolveInScope(v interface{}) error {
