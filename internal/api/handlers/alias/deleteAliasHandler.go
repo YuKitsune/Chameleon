@@ -10,6 +10,6 @@ func NewDeleteAliasHandler() *DeleteAliasHandler {
 	return &DeleteAliasHandler{}
 }
 
-func (handler *DeleteAliasHandler) Handle(req *model.DeleteAliasRequest) error {
+func (handler *DeleteAliasHandler) Handle(req *model.DeleteAliasRequest) (bool, error) {
 	panic("implement me")
 }

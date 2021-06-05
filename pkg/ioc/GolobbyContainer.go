@@ -11,7 +11,7 @@ type GolobbyContainer struct {
 	c *container.Container
 }
 
-func NewGolobbyContainer() *GolobbyContainer {
+func NewGolobbyContainer() Container {
 	c := container.NewContainer()
 	return &GolobbyContainer{c: &c}
 }

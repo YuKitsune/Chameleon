@@ -49,12 +49,12 @@ func getResponseType(handlerType reflect.Type) (*reflect.Type, error) {
 		return nil, &ErrHandlerMethodNotFound{}
 	}
 
+	// first arg is the receiver, second is the request
 	numIn := method.Type.NumIn()
 	if numIn != 2 {
 		return nil, &ErrHandlerMethodNotFound{}
 	}
 
-	// first arg is the receiver, second is the event
 	responseType := method.Type.Out(0)
 	returnsError := method.Type.Out(1).Name() == "error"
 	if !returnsError {

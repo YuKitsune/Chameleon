@@ -7,6 +7,7 @@ import (
 	"github.com/yukitsune/chameleon/internal/api/routers"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/ioc"
+	"github.com/yukitsune/chameleon/pkg/mediator"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"net/http"
@@ -73,7 +74,14 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Containe
 		return nil, err
 	}
 
-	err = c.RegisterModule(alias.NewAliasHandlerModule())
+	err = c.RegisterSingletonFactory(func () ioc.Container {
+		return c
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.RegisterSingletonFactory(makeMediator)
 	if err != nil {
 		return nil, err
 	}
@@ -84,9 +92,36 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Containe
 func makeHandler(container ioc.Container) http.Handler {
 	m := mux.NewRouter()
 
-	routers.NewAliasRouter(m.Path("/alias").Subrouter(), container)
+	routers.NewAliasRouter(m.PathPrefix("/alias").Subrouter(), container)
 
 	return m
+}
+
+func makeMediator(container ioc.Container) (*mediator.Mediator, error) {
+	m := mediator.New(container)
+	var err error
+
+	err = m.AddRequestHandlerFactory(alias.NewCreateAliasHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.AddRequestHandlerFactory(alias.NewReadAliasHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.AddRequestHandlerFactory(alias.NewUpdateAliasHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	err = m.AddRequestHandlerFactory(alias.NewDeleteAliasHandler)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
 }
 
 func (api *ChameleonApiServer) Shutdown() error {

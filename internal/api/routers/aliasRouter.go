@@ -17,7 +17,7 @@ type AliasRouter struct {
 
 func NewAliasRouter(r *mux.Router, c ioc.Container) *AliasRouter {
 	router :=  &AliasRouter{
-		r:        r,
+		r:         r,
 		container: c,
 	}
 
@@ -31,7 +31,10 @@ func (router *AliasRouter) setup() {
 	}
 
 	router.r.HandleFunc("/create", router.Create)
-	router.r.HandleFunc("/read", router.Read)
+	router.r.HandleFunc("", router.Read).
+		Queries(
+			"sender", "{sender}",
+			"recipient", "{recipient}")
 	router.r.HandleFunc("/update", router.Update)
 	router.r.HandleFunc("/delete", router.Delete)
 
@@ -149,8 +152,8 @@ func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	err = router.container.ResolveInScope(func (mediator *mediator.Mediator) error {
-		return mediator.Publish(deleteRequest)
+	_, err = router.container.ResolveInScopeWithResponse(func (mediator *mediator.Mediator) (interface{}, error) {
+		return mediator.Send(deleteRequest)
 	})
 
 	if err != nil {

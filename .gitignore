@@ -29,3 +29,4 @@
 .history/
 logs
 bin
+*.log
