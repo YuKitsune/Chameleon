@@ -1,0 +1,12 @@
+chameleon-api-base-url: https://api/
+smtp:
+  xclient-on: true
+  tls:
+    private-key-file: TODO
+    public-key-file: TODO
+    root-cas-file: TODO
+    start-tls-on: true
+    always-on: true
+log:
+  directory: ./logs
+  level: Debug

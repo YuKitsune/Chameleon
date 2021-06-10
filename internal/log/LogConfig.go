@@ -1,8 +1,8 @@
 package log
 
 type LogConfig struct {
-	Directory string `json:"log-dir"`
-	Level     string `json:"log-level"`
+	Directory string `json:"directory"`
+	Level     string `json:"level"`
 }
 
 func (l *LogConfig) SetDefaults() error {

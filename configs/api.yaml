@@ -1,0 +1,13 @@
+api:
+  port: 80
+  certificate-file:
+  key-file:
+  database:
+    host: database
+    port: 5432
+    user: chameleon
+    password: chameleon
+    database: chameleon
+log:
+  directory: ./logs
+  level: Debug

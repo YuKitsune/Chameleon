@@ -38,6 +38,7 @@ type ServerConfig struct {
 	// Defaults to defaultMaxClients
 	MaxClients int `yaml:"max-clients"`
 
+	// Todo: Revisit
 	// AllowedHosts lists which hosts to accept email for. Defaults to os.Hostname
 	AllowedHosts []string `yaml:"allowed-hosts"`
 

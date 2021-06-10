@@ -18,11 +18,13 @@ type ChameleonApiServer struct {
 	config    *ApiConfig
 	svr       *http.Server
 	container ioc.Container
+	log log.ChameleonLogger
 }
 
 func NewChameleonApiServer(config *ApiConfig, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
 	api := &ChameleonApiServer{
 		config: config,
+		log: logger,
 	}
 
 	c, err := makeContainer(config.Database, logger)
@@ -44,10 +46,13 @@ func NewChameleonApiServer(config *ApiConfig, logger log.ChameleonLogger) (*Cham
 }
 
 func (api *ChameleonApiServer) Start() error {
+	api.log.Infof("Listening on TCP %s", api.svr.Addr)
+	api.log.Warningln("TLS not enabled")
 	return api.svr.ListenAndServe()
 }
 
 func (api *ChameleonApiServer) StartTLS() error {
+	api.log.Infof("Listening on TCP %s with TLS", api.svr.Addr)
 	return api.svr.ListenAndServeTLS(api.config.CertFile, api.config.KeyFile)
 }
 

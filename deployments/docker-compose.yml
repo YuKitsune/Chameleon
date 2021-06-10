@@ -12,3 +12,11 @@ services:
       dockerfile: build/package/chameleon-mtd/Dockerfile
     ports:
       - 25:25
+  database:
+    image: 'postgres:latest'
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: chameleon
+      POSTGRES_PASSWORD: chameleon
+      POSTGRES_DB: chameleon

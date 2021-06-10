@@ -64,7 +64,7 @@ func serve(command *cobra.Command, args []string) error {
 			return err
 		}
 
-		err = yaml.Unmarshal(data, config)
+		err = yaml.Unmarshal(data, &config)
 		if err != nil {
 			return err
 		}
