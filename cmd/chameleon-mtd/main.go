@@ -2,36 +2,13 @@ package main
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/yukitsune/chameleon/cmd"
+	"github.com/yukitsune/chameleon/internal/config"
+	"github.com/yukitsune/chameleon/internal/grace"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/handlers"
 	"github.com/yukitsune/chameleon/pkg/smtp"
-	"gopkg.in/yaml.v2"
 	"net/url"
-	"os"
 )
-
-var configFile string
-
-type ChameleonMtdConfig struct {
-	ApiUrl  string             `yaml:"chameleon-api-base-url"`
-	Smtp    *smtp.ServerConfig `yaml:"smtp"`
-	Logging *log.LogConfig     `yaml:"log"`
-}
-
-func (c *ChameleonMtdConfig) SetDefaults() error {
-	err := c.Smtp.SetDefaults()
-	if err != nil {
-		return err
-	}
-
-	err = c.Logging.SetDefaults()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func main() {
 	serveCmd := &cobra.Command{
@@ -40,60 +17,53 @@ func main() {
 		RunE:  serve,
 	}
 
-	serveCmd.Flags().StringVar(&configFile, "config", "", "the path to the config file")
+	// Automatically setup the command-line flags based on our config struct
+	err := config.SetupFlagsForConfig(serveCmd, &ChameleonMtdConfig{})
+	if err != nil {
+		grace.ExitFromError(err)
+	}
 
 	rootCmd := &cobra.Command{
 		Use:   "chameleon-mtd <command> [flags]",
-		Short: "The Chameleon mail transfer daemon",
+		Short: "The Chameleon Mail Transfer Daemon",
 	}
 
 	rootCmd.AddCommand(serveCmd)
 
-	err := rootCmd.Execute()
+	err = rootCmd.Execute()
 	if err != nil {
-		cmd.ExitFromError(err)
+		grace.ExitFromError(err)
 	}
 }
 
+
 func serve(command *cobra.Command, args []string) error {
 
-	config := ChameleonMtdConfig{}
-	if configFile != "" {
-		data, err := os.ReadFile(configFile)
-		if err != nil {
-			return err
-		}
-
-		err = yaml.Unmarshal(data, &config)
-		if err != nil {
-			return err
-		}
-	} else {
-		config.Smtp = &smtp.ServerConfig{
-			TLS: &smtp.ServerTLSConfig{},
-		}
-		config.Logging = &log.LogConfig{}
-	}
-
-	err := config.SetDefaults()
+	// Load the config
+	mtdConfig := &ChameleonMtdConfig{}
+	err := config.LoadConfig("mtd", mtdConfig)
 	if err != nil {
 		return err
 	}
 
-	logger := cmd.MakeLogger(config.Logging)
+	// Setup the logger
+	logger := log.New(mtdConfig.Logging)
 
-	apiUrl, err := url.Parse(config.ApiUrl)
+	// Setup the handler
+	apiUrl, err := url.Parse(mtdConfig.ApiUrl)
 	if err != nil {
 		return err
 	}
 
 	handler := handlers.NewDefaultHandler(apiUrl, logger)
 
-	server, err := smtp.NewServer(config.Smtp, handler, logger)
+	// Setup the server
+	server, err := smtp.NewServer(mtdConfig.Smtp, handler, logger)
 	if err != nil {
 		return err
 	}
 
+	// Start the server and wait for any errors
 	errorChan := make(chan error, 1)
 	go func() {
 		if err = server.Start(); err != nil {
@@ -102,8 +72,7 @@ func serve(command *cobra.Command, args []string) error {
 	}()
 
 	// server.Start doesn't block, wait for exit signal or error
-	cmd.WaitForShutdownSignalOrError(errorChan, logger)
-	server.Shutdown()
+	grace.WaitForShutdownSignalOrError(errorChan, logger, server.Shutdown)
 
 	return nil
 }

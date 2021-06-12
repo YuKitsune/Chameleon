@@ -13,65 +13,65 @@ const defaultTimeout = 30
 const defaultInterface = "127.0.0.1:2525"
 const defaultMaxSize = int64(10 << 20) // 10 Mebibytes
 
-// ServerConfig specifies config options for a single server
-type ServerConfig struct {
+// Config specifies config options for a single server
+type Config struct {
+
 	// TLS Configuration
-	TLS *ServerTLSConfig `yaml:"tls,omitempty"`
+	TLS *TLSConfig `mapstructure:"tls,omitempty"`
 
 	// Hostname will be used in the server's reply to HELO/EHLO
 	// If TLS enabled, make sure that the Hostname matches the cert
 	// Defaults to os.Hostname()
 	// Hostname will also be used to fill the 'Host' property when the "RCPT TO" address is addressed to just <postmaster>
-	Hostname string `yaml:"hostname"`
+	Hostname string `mapstructure:"hostname" usage:"The hostname to use in the server's reply to HELO/EHLO. Will also be used to fill the 'Host' property when the \"RCPT TO\" address is addressed to just <postmaster>. (If TLS enabled, make sure that the Hostname matches the cert)"`
 
 	// Listen interface specified in <ip>:<port> - defaults to 127.0.0.1:2525
-	ListenInterface string `yaml:"listen-interface"`
+	ListenInterface string `mapstructure:"listen-interface" usage:"Listen interface specified in <ip>:<port>"`
 
 	// MaxSize is the maximum size of an email that will be accepted for delivery
 	// Defaults to 10 Mebibytes
-	MaxSize int64 `yaml:"max-mail-size"`
+	MaxSize int64 `mapstructure:"max-mail-size" usage:"Maximum size of an email that will be accepted for delivery measured in mebibytes."`
 
 	// Timeout specifies the connection timeout in seconds. Defaults to 30
-	Timeout int `yaml:"timeout"`
+	Timeout int `mapstructure:"timeout"`
 
 	// MaxClients controls how many maximum clients we can handle at once
 	// Defaults to defaultMaxClients
-	MaxClients int `yaml:"max-clients"`
+	MaxClients int `mapstructure:"max-clients"`
 
-	// Todo: Revisit
 	// AllowedHosts lists which hosts to accept email for. Defaults to os.Hostname
-	AllowedHosts []string `yaml:"allowed-hosts"`
+	AllowedHosts []string `mapstructure:"allowed-hosts" usage:"Which hosts to accept email for."`
 
 	// XClientOn when using a proxy such as Nginx, XCLIENT command is used to pass the
 	// original client's IP address & client's HELO
-	XClientOn bool `yaml:"xclient-on,omitempty"`
+	XClientOn bool `mapstructure:"xclient-on,omitempty" usage:"When using a proxy such as Nginx, XCLIENT command is used to pass the original client's IP address & client's HELO."`
 }
 
 // Loads in timestamps for the TLS keys
-func (sc *ServerConfig) loadTlsKeyTimestamps() error {
+func (c *Config) loadTlsKeyTimestamps() error {
 	var statErr = func(iface string, err error) error {
 		return fmt.Errorf(
 			"could not stat key for server [%s], %s",
 			iface,
 			err.Error())
 	}
-	if sc.TLS.PrivateKeyFile == "" {
-		sc.TLS._privateKeyFileMtime = time.Now().Unix()
+	if c.TLS.PrivateKeyFile == "" {
+		c.TLS._privateKeyFileMtime = time.Now().Unix()
 		return nil
 	}
-	if sc.TLS.PublicKeyFile == "" {
-		sc.TLS._publicKeyFileMtime = time.Now().Unix()
+	if c.TLS.PublicKeyFile == "" {
+		c.TLS._publicKeyFileMtime = time.Now().Unix()
 		return nil
 	}
-	if info, err := os.Stat(sc.TLS.PrivateKeyFile); err == nil {
-		sc.TLS._privateKeyFileMtime = info.ModTime().Unix()
+	if info, err := os.Stat(c.TLS.PrivateKeyFile); err == nil {
+		c.TLS._privateKeyFileMtime = info.ModTime().Unix()
 	} else {
-		return statErr(sc.ListenInterface, err)
+		return statErr(c.ListenInterface, err)
 	}
-	if info, err := os.Stat(sc.TLS.PublicKeyFile); err == nil {
-		sc.TLS._publicKeyFileMtime = info.ModTime().Unix()
+	if info, err := os.Stat(c.TLS.PublicKeyFile); err == nil {
+		c.TLS._publicKeyFileMtime = info.ModTime().Unix()
 	} else {
-		return statErr(sc.ListenInterface, err)
+		return statErr(c.ListenInterface, err)
 	}
 	return nil
 }
@@ -97,9 +97,9 @@ func getChanges(a interface{}, b interface{}) map[string]interface{} {
 		}
 	}
 	// detect changes to TLS keys (have the key files been modified?)
-	if oldTLS, ok := a.(ServerTLSConfig); ok {
+	if oldTLS, ok := a.(TLSConfig); ok {
 		t1, t2 := oldTLS.getTlsKeyTimestamps()
-		if newTLS, ok := b.(ServerTLSConfig); ok {
+		if newTLS, ok := b.(TLSConfig); ok {
 			t3, t4 := newTLS.getTlsKeyTimestamps()
 			if t1 != t3 {
 				ret["PrivateKeyFile"] = newTLS.PrivateKeyFile
@@ -153,7 +153,10 @@ func structtomap(obj interface{}) map[string]interface{} {
 // * timeout to 30 sec
 // * Backend configured with the following processors: `HeadersParser|Header|Debugger`
 // where it will log the received emails.
-func (c *ServerConfig) SetDefaults() error {
+func (c *Config) SetDefaults() error {
+	if c.TLS == nil {
+		c.TLS = &TLSConfig{}
+	}
 
 	err := c.TLS.SetDefaults()
 	if err != nil {

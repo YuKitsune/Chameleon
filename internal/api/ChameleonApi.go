@@ -15,13 +15,13 @@ import (
 )
 
 type ChameleonApiServer struct {
-	config    *ApiConfig
+	config    *Config
 	svr       *http.Server
 	container ioc.Container
 	log log.ChameleonLogger
 }
 
-func NewChameleonApiServer(config *ApiConfig, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
+func NewChameleonApiServer(config *Config, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
 	api := &ChameleonApiServer{
 		config: config,
 		log: logger,

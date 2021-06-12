@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"github.com/yukitsune/chameleon/cmd"
+	"github.com/yukitsune/chameleon/internal/grace"
 	"github.com/yukitsune/chameleon/internal/log"
 	"net/smtp"
 )
 
 func main() {
 
-	logger := cmd.MakeLogger(&log.LogConfig{
+	logger := cmd.MakeLogger(&log.Config{
 		Directory: "./logs",
 		Level:     "trace",
 	})
@@ -41,5 +42,5 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	cmd.WaitForShutdownSignal(logger)
+	grace.WaitForShutdownSignal(logger)
 }

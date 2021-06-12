@@ -1,4 +1,4 @@
-package cmd
+package grace
 
 import (
 	"fmt"
@@ -9,15 +9,27 @@ import (
 	"time"
 )
 
-func WaitForShutdownSignal(logger log.ChameleonLogger) {
-	WaitForSignal(getShutdownSignalChan(), make(chan error, 1), logger)
+
+type shutdownHook func()
+type Grace struct {
+	shutdownHooks []shutdownHook
 }
 
-func WaitForShutdownSignalOrError(errorChan chan error, logger log.ChameleonLogger) {
-	WaitForSignal(getShutdownSignalChan(), errorChan, logger)
+func WaitForShutdownSignal(logger log.ChameleonLogger, shutdownHooks ...shutdownHook) {
+	waitForSignal(getShutdownSignalChan(), make(chan error, 1), logger)
+	for _, hook := range shutdownHooks {
+		hook()
+	}
 }
 
-func WaitForSignal(shutdownSignalChan chan os.Signal, errorChan chan error, logger log.ChameleonLogger) {
+func WaitForShutdownSignalOrError(errorChan chan error, logger log.ChameleonLogger, shutdownHooks ...shutdownHook) {
+	waitForSignal(getShutdownSignalChan(), errorChan, logger)
+	for _, hook := range shutdownHooks {
+		hook()
+	}
+}
+
+func waitForSignal(shutdownSignalChan chan os.Signal, errorChan chan error, logger log.ChameleonLogger) {
 	select {
 	case sig := <-shutdownSignalChan:
 		handleShutdownSignal(sig, logger)
@@ -40,7 +52,7 @@ func handleShutdownSignal(sig os.Signal, logger log.ChameleonLogger) {
 				os.Exit(1)
 			}
 		}()
-		logger.Infof("Shutdown completed, exiting.")
+		logger.Infof("Shutdown completed, exiting")
 		return
 	} else {
 		logger.Infof("Shutdown, unknown signal caught")
@@ -49,7 +61,7 @@ func handleShutdownSignal(sig os.Signal, logger log.ChameleonLogger) {
 }
 
 func handleError(err error, logger log.ChameleonLogger) {
-	logger.Errorf("A fatal error has occurred: %v", err)
+	logger.Fatalf("A fatal error has occurred: %v", err)
 }
 
 func getShutdownSignalChan() chan os.Signal {
@@ -67,41 +79,10 @@ func getShutdownSignalChan() chan os.Signal {
 
 func ExitFromError(err error) {
 	format := "error: %v\n"
-	if _, err := fmt.Fprintf(os.Stderr, format, err); err != nil {
+	if _, printErr := fmt.Fprintf(os.Stderr, format, err); printErr != nil {
+		// couldn't print to stderr, just print normally i guess
 		fmt.Printf(format, err)
 	}
 
 	os.Exit(1)
-}
-
-func MakeLogger(cfg *log.LogConfig) log.ChameleonLogger {
-
-	level, err := log.ParseLevel(cfg.Level)
-	if err != nil {
-		ExitFromError(err)
-	}
-
-	logFactory := log.NewLogFactory(
-		cfg.Directory,
-		level,
-		log.DefaultFileNameProvider,
-		log.LogrusLoggerProvider,
-	)
-
-	logger, err := logFactory.Make()
-	if err != nil {
-		ExitFromError(err)
-	}
-
-	return logger
-}
-
-func GetValidLogLevels() []string {
-	logLevels := log.AllLevels
-	var logLevelStrings []string
-	for _, level := range logLevels {
-		logLevelStrings = append(logLevelStrings, level.String())
-	}
-
-	return logLevelStrings
 }
