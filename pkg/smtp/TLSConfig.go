@@ -63,57 +63,57 @@ var TLSClientAuthTypes = map[string]tls.ClientAuthType{
 	"RequireAndVerifyClientCert": tls.RequireAndVerifyClientCert,
 }
 
-type ServerTLSConfig struct {
+type TLSConfig struct {
 
 	// TLS Protocols to use. [0] = min, [1]max
 	// Use Go's default if empty
-	Protocols []string `yaml:"protocols,omitempty"`
+	Protocols []string `mapstructure:"protocols,omitempty"`
 
 	// TLS Ciphers to use.
 	// Use Go's default if empty
-	Ciphers []string `yaml:"ciphers,omitempty"`
+	Ciphers []string `mapstructure:"ciphers,omitempty"`
 
 	// TLS Curves to use.
 	// Use Go's default if empty
-	Curves []string `yaml:"curves,omitempty"`
+	Curves []string `mapstructure:"curves,omitempty"`
 
 	// PrivateKeyFile path to cert private key in PEM format.
-	PrivateKeyFile string `yaml:"private-key-file"`
+	PrivateKeyFile string `mapstructure:"private-key-file"`
 
 	// PublicKeyFile path to cert (public key) chain in PEM format.
-	PublicKeyFile string `yaml:"public-key-file"`
+	PublicKeyFile string `mapstructure:"public-key-file"`
 
+	// Todo: This doc is weird...
 	// TLS Root cert authorities to use. "A PEM encoded CA's certificate file.
 	// Defaults to system's root CA file if empty
-	RootCAs string `yaml:"root-cas-file,omitempty"`
+	RootCAs string `mapstructure:"root-cas-file,omitempty"`
 
 	// declares the policy the server will follow for TLS Client Authentication.
 	// Use Go's default if empty
-	ClientAuthType string `yaml:"client-auth-type,omitempty"`
+	ClientAuthType string `mapstructure:"client-auth-type,omitempty" usage:"The policy the server will follow for TLS Client Authentication."`
 
 	// The following used to watch certificate changes so that the TLS can be reloaded
 	_privateKeyFileMtime int64
 	_publicKeyFileMtime  int64
 
-	// controls whether the server selects the
-	// client's most preferred cipher suite
-	PreferServerCipherSuites bool `yaml:"prefer-server-cipher-suites,omitempty"`
+	// Whether the server selects the client's most preferred cipher suite.
+	PreferServerCipherSuites bool `mapstructure:"prefer-server-cipher-suites,omitempty" usage:"Whether the server selects the client's most preferred cipher suite."`
 
 	// StartTLSOn should we offer STARTTLS command. Cert must be valid.
 	// False by default
-	StartTLSOn bool `yaml:"start-tls-on,omitempty"`
+	StartTLSOn bool `mapstructure:"start-tls-on,omitempty" usage:"Whether we offer STARTTLS command. (Cert must be valid)"`
 
-	// AlwaysOn run this server as a pure TLS server, i.e. SMTPS
-	AlwaysOn bool `yaml:"always-on,omitempty"`
+	// AlwaysOn run this server as a pure TLS server. (I.e. SMTPS)
+	AlwaysOn bool `mapstructure:"always-on,omitempty" usage:"Run this server as a pure TLS server. (I.e. SMTPS)"`
 }
 
 // Gets the timestamp of the TLS certificates. Returns a unix time of when they were last modified
 // when the config was read. We use this info to determine if TLS needs to be re-loaded.
-func (stc *ServerTLSConfig) getTlsKeyTimestamps() (int64, int64) {
+func (stc *TLSConfig) getTlsKeyTimestamps() (int64, int64) {
 	return stc._privateKeyFileMtime, stc._publicKeyFileMtime
 }
 
-func (stc *ServerTLSConfig) SetDefaults() error {
+func (stc *TLSConfig) SetDefaults() error {
 
 	err := stc.Validate()
 	if err != nil {
@@ -123,7 +123,7 @@ func (stc *ServerTLSConfig) SetDefaults() error {
 	return nil
 }
 
-func (stc *ServerTLSConfig) Validate() error {
+func (stc *TLSConfig) Validate() error {
 	var errs chameleonErrors.Errors
 
 	if stc.StartTLSOn || stc.AlwaysOn {

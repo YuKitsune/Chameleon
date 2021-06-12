@@ -63,8 +63,8 @@ build-api-container: ## Builds the docker container for the REST API server
 
 .PHONY: compose
 compose: ## Runs docker compose
-	docker compose -f ./deployments/docker-compose.yml up
+	docker-compose --file ./deployments/docker-compose.yml --env-file ./configs/.env.dev up
 
 .PHONY: compose-fresh
 compose-fresh: ## Rebuilds the containers and forces a recreation
-	docker compose -f ./deployments/docker-compose.yml up --build --force-recreate
+	docker-compose --file ./deployments/docker-compose.yml --env-file ./configs/.env.dev up --build --force-recreate

@@ -2,6 +2,7 @@ package log
 
 import (
 	"fmt"
+	"github.com/yukitsune/chameleon/internal/grace"
 	"strings"
 )
 
@@ -125,4 +126,26 @@ type ChameleonLogger interface {
 	Panicln(args ...interface{})
 
 	IsDebug() bool
+}
+
+func New(cfg *Config) ChameleonLogger {
+
+	level, err := ParseLevel(cfg.Level)
+	if err != nil {
+		grace.ExitFromError(err)
+	}
+
+	logFactory := NewLogFactory(
+		cfg.Directory,
+		level,
+		DefaultFileNameProvider,
+		LogrusLoggerProvider,
+	)
+
+	logger, err := logFactory.Make()
+	if err != nil {
+		grace.ExitFromError(err)
+	}
+
+	return logger
 }

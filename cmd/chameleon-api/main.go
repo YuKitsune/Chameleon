@@ -2,34 +2,12 @@ package main
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/yukitsune/chameleon/cmd"
 	"github.com/yukitsune/chameleon/internal/api"
+	"github.com/yukitsune/chameleon/internal/config"
+	"github.com/yukitsune/chameleon/internal/grace"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/ioc"
-	"gopkg.in/yaml.v2"
-	"os"
 )
-
-var configFile string
-
-type ChameleonApiConfig struct {
-	Api     *api.ApiConfig `yaml:"api"`
-	Logging *log.LogConfig `yaml:"log"`
-}
-
-func (c *ChameleonApiConfig) SetDefaults() error {
-	err := c.Api.SetDefaults()
-	if err != nil {
-		return err
-	}
-
-	err = c.Logging.SetDefaults()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func main() {
 
@@ -39,48 +17,41 @@ func main() {
 		RunE:  serve,
 	}
 
-	serveCmd.Flags().StringVar(&configFile, "config", "", "the path to the config file")
+	err := config.SetupFlagsForConfig(serveCmd, &ChameleonApiConfig{})
+	if err != nil {
+		grace.ExitFromError(err)
+	}
 
+	// Automatically setup the command-line flags based on our config struct
 	rootCmd := &cobra.Command{
 		Use:   "chameleon-api <command> [flags]",
 		Short: "The Chameleon REST API",
 	}
 
 	rootCmd.AddCommand(serveCmd)
-	if err := rootCmd.Execute(); err != nil {
-		cmd.ExitFromError(err)
+
+	err = rootCmd.Execute()
+	if err != nil {
+		grace.ExitFromError(err)
 	}
 }
 
 func serve(command *cobra.Command, args []string) error {
 
-	config := ChameleonApiConfig{}
-	if configFile != "" {
-		data, err := os.ReadFile(configFile)
-		if err != nil {
-			return err
-		}
-
-		err = yaml.Unmarshal(data, &config)
-		if err != nil {
-			return err
-		}
-	} else {
-		config.Api = &api.ApiConfig{}
-		config.Logging = &log.LogConfig{}
-	}
-
-	err := config.SetDefaults()
+	// Load the config
+	apiConfig := &ChameleonApiConfig{}
+	err := config.LoadConfig("api", apiConfig)
 	if err != nil {
 		return err
 	}
 
-	container, err := setupContainer(&config)
+	// Setup the IoC container
+	container, err := setupContainer(apiConfig)
 	if err != nil {
 		return err
 	}
 
-	err = container.ResolveInScope(func(svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
+	return container.ResolveInScope(func(svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
 
 		// Run our server in a goroutine so that it doesn't block.
 		errorChan := make(chan error, 1)
@@ -92,14 +63,8 @@ func serve(command *cobra.Command, args []string) error {
 			}
 		}()
 
-		cmd.WaitForShutdownSignalOrError(errorChan, logger)
-		_ = svr.Shutdown()
+		grace.WaitForShutdownSignalOrError(errorChan, logger, func() { _ = svr.Shutdown() })
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func setupContainer(cfg *ChameleonApiConfig) (ioc.Container, error) {
@@ -118,7 +83,7 @@ func setupContainer(cfg *ChameleonApiConfig) (ioc.Container, error) {
 	}
 
 	// Services
-	err = c.RegisterTransientFactory(cmd.MakeLogger)
+	err = c.RegisterTransientFactory(log.New)
 	if err != nil {
 		return nil, err
 	}
