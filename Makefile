@@ -43,14 +43,13 @@ clean: ## Removes the bin/ directory
 	rm -rf bin
 
 .PHONY: build-containers
-build-containers: build-mtd-container build-api-container ## Builds a docker container for all programs
+build-containers: build-database-container build-api-container build-mtd-container ## Builds a docker container for all programs
 
-.PHONY: build-mtd-container
-build-mtd-container: ## Builds the docker container for the MTD
+.PHONY: build-database-container
+build-database-container: ## Builds the docker container for the database
 	docker build \
-		-t chameleon-mtd \
-		-f build/package/chameleon-mtd/Dockerfile \
-		$(DOCKER_BUILD_ARGS) \
+		-t chameleon-db \
+		-f build/package/database/Dockerfile \
 		.
 
 .PHONY: build-api-container
@@ -58,6 +57,14 @@ build-api-container: ## Builds the docker container for the REST API server
 	docker build \
 		-t chameleon-api \
 		-f build/package/chameleon-api/Dockerfile \
+		$(DOCKER_BUILD_ARGS) \
+		.
+
+.PHONY: build-mtd-container
+build-mtd-container: ## Builds the docker container for the MTD
+	docker build \
+		-t chameleon-mtd \
+		-f build/package/chameleon-mtd/Dockerfile \
 		$(DOCKER_BUILD_ARGS) \
 		.
 
