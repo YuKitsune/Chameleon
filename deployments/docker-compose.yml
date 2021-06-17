@@ -1,5 +1,18 @@
 version: "3.9"
 services:
+  database:
+    build:
+      context: ../
+      dockerfile: build/package/database/Dockerfile
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: chameleon
+      POSTGRES_PASSWORD: chameleon
+      POSTGRES_DB: chameleon
+      API_USER: api
+      API_PASSWORD: api
+      API_DB: api
   api:
     build:
       context: ../
