@@ -13,4 +13,4 @@ LABEL branch=$GIT_BRANCH \
 ADD . /go/src/github.com/YuKitsune/Chameleon
 WORKDIR /go/src/github.com/YuKitsune/Chameleon
 RUN go build -o bin/chameleon-api -ldflags "-X 'github.com/yukitsune/chameleon.Version=$VERSION'" cmd/chameleon-api/main.go
-CMD ["./bin/chameleon-api", "serve", "--config", "./configs/api.yaml"]
+CMD ["./bin/chameleon-api", "serve"]

@@ -1,6 +1,8 @@
 package api
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Config struct {
 	Port     int    `mapstructure:"port"`

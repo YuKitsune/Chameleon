@@ -9,6 +9,31 @@ import (
 	"github.com/yukitsune/chameleon/pkg/ioc"
 )
 
+type ChameleonApiConfig struct {
+	Api     *api.Config `mapstructure:"api"`
+	Logging *log.Config `mapstructure:"log"`
+}
+
+func (c *ChameleonApiConfig) SetDefaults() error {
+	if c.Api == nil {
+		c.Api = &api.Config{}
+	}
+	err := c.Api.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	if c.Logging == nil {
+		c.Logging = &log.Config{}
+	}
+	err = c.Logging.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func main() {
 
 	serveCmd := &cobra.Command{
@@ -72,12 +97,12 @@ func setupContainer(cfg *ChameleonApiConfig) (ioc.Container, error) {
 	var err error
 
 	// Configuration
-	err = c.RegisterSingletonInstance(cfg.Logging)
+	err = c.RegisterSingletonInstance(cfg.Api)
 	if err != nil {
 		return nil, err
 	}
 
-	err = c.RegisterSingletonInstance(cfg.Api)
+	err = c.RegisterSingletonInstance(cfg.Logging)
 	if err != nil {
 		return nil, err
 	}

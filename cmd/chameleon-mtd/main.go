@@ -10,6 +10,32 @@ import (
 	"net/url"
 )
 
+type ChameleonMtdConfig struct {
+	ApiUrl  string       `mapstructure:"api-url"`
+	Smtp    *smtp.Config `mapstructure:"smtp"`
+	Logging *log.Config  `mapstructure:"log"`
+}
+
+func (c *ChameleonMtdConfig) SetDefaults() error {
+	if c.Smtp == nil {
+		c.Smtp = &smtp.Config{}
+	}
+	err := c.Smtp.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	if c.Logging == nil {
+		c.Logging = &log.Config{}
+	}
+	err = c.Logging.SetDefaults()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func main() {
 	serveCmd := &cobra.Command{
 		Use:   "serve",
@@ -47,7 +73,10 @@ func serve(command *cobra.Command, args []string) error {
 	}
 
 	// Setup the logger
-	logger := log.New(mtdConfig.Logging)
+	logger, err := log.New(mtdConfig.Logging)
+	if err != nil {
+		return err
+	}
 
 	// Setup the handler
 	apiUrl, err := url.Parse(mtdConfig.ApiUrl)

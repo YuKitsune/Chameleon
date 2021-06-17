@@ -13,23 +13,31 @@ services:
       API_USER: api
       API_PASSWORD: api
       API_DB: api
+
   api:
     build:
       context: ../
       dockerfile: build/package/chameleon-api/Dockerfile
     ports:
       - 8000:8000
+    environment:
+      CHAMELEON_API_API_PORT: 8000
+      CHAMELEON_API_DATABASE_HOST: database
+      CHAMELEON_API_DATABASE_PORT: 5432
+      CHAMELEON_API_DATABASE_USER: api
+      CHAMELEON_API_DATABASE_PASSWORD: api
+      CHAMELEON_API_DATABASE_DB: api
+    depends_on:
+      - database
+
   mtd:
     build:
       context: ../
       dockerfile: build/package/chameleon-mtd/Dockerfile
     ports:
       - 25:25
-  database:
-    image: 'postgres:latest'
-    ports:
-      - 5432:5432
     environment:
-      POSTGRES_USER: chameleon
-      POSTGRES_PASSWORD: chameleon
-      POSTGRES_DB: chameleon
+      CHAMELEON_MTD_API_URL: http://api/
+      CHAMELEON_MTD_SMTP_XCLIENT_ON: 'true'
+    depends_on:
+      - api
