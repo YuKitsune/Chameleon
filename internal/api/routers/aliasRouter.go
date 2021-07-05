@@ -2,8 +2,8 @@ package routers
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api/model"
-	"github.com/yukitsune/chameleon/pkg/ioc"
 	"github.com/yukitsune/chameleon/pkg/mediator"
 	"net/http"
 	"reflect"
@@ -11,11 +11,11 @@ import (
 
 type AliasRouter struct {
 	r *mux.Router
-	container ioc.Container
+	container camogo.Container
 	hasBeenSetUp bool
 }
 
-func NewAliasRouter(r *mux.Router, c ioc.Container) *AliasRouter {
+func NewAliasRouter(r *mux.Router, c camogo.Container) *AliasRouter {
 	router :=  &AliasRouter{
 		r:         r,
 		container: c,
@@ -58,8 +58,10 @@ func (router *AliasRouter) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveInScopeWithResponse(func (mediator *mediator.Mediator) (interface{}, error){
-		return mediator.Send(createRequest)
+	var res interface{}
+	err = router.container.Resolve(func (mediator *mediator.Mediator) error {
+		res, err = mediator.Send(createRequest)
+		return err
 	})
 
 	if err != nil {
@@ -94,9 +96,13 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveInScopeWithResponse(func (mediator *mediator.Mediator) (interface{}, error){
-		return mediator.Send(req)
+	var res interface{}
+	var err error
+	err = router.container.Resolve(func (mediator *mediator.Mediator) error {
+		res, err = mediator.Send(req)
+		return err
 	})
+
 	if err != nil {
 		writeError(w, err)
 		return
@@ -123,9 +129,12 @@ func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveInScopeWithResponse(func (mediator *mediator.Mediator) (interface{}, error){
-		return mediator.Send(updateRequest)
+	var res interface{}
+	err = router.container.Resolve(func (mediator *mediator.Mediator) error {
+		res, err = mediator.Send(updateRequest)
+		return err
 	})
+
 	if err != nil {
 		writeError(w, err)
 		return
@@ -152,8 +161,10 @@ func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	_, err = router.container.ResolveInScopeWithResponse(func (mediator *mediator.Mediator) (interface{}, error) {
-		return mediator.Send(deleteRequest)
+	var res interface{}
+	err = router.container.Resolve(func (mediator *mediator.Mediator) error {
+		res, err = mediator.Send(deleteRequest)
+		return err
 	})
 
 	if err != nil {

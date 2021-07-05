@@ -2,8 +2,8 @@ package mediator
 
 import (
 	"fmt"
+	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/pkg/errors"
-	"github.com/yukitsune/chameleon/pkg/ioc"
 	"reflect"
 )
 
@@ -18,10 +18,10 @@ func (err *ErrHandlerNotFound) Error() string {
 type Mediator struct {
 	eventHandlers []eventHandler
 	requestHandlers []requestHandler
-	container ioc.Container
+	container camogo.Container
 }
 
-func New(c ioc.Container) *Mediator {
+func New(c camogo.Container) *Mediator {
 	return &Mediator{
 		container: c,
 	}

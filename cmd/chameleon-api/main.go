@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api"
 	"github.com/yukitsune/chameleon/internal/config"
 	"github.com/yukitsune/chameleon/internal/grace"
 	"github.com/yukitsune/chameleon/internal/log"
-	"github.com/yukitsune/chameleon/pkg/ioc"
 )
 
 type ChameleonApiConfig struct {
@@ -76,7 +76,7 @@ func serve(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	return container.ResolveInScope(func(svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
+	return container.Resolve(func(svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
 
 		// Run our server in a goroutine so that it doesn't block.
 		errorChan := make(chan error, 1)
@@ -92,28 +92,37 @@ func serve(command *cobra.Command, args []string) error {
 	})
 }
 
-func setupContainer(cfg *ChameleonApiConfig) (ioc.Container, error) {
-	c := ioc.NewGolobbyContainer()
-	var err error
+func setupContainer(cfg *ChameleonApiConfig) (camogo.Container, error) {
+	c := camogo.New()
+	err := c.Register(func (r *camogo.Registrar) error {
 
-	// Configuration
-	err = c.RegisterSingletonInstance(cfg.Api)
-	if err != nil {
-		return nil, err
-	}
+		// Todo: Move to module
 
-	err = c.RegisterSingletonInstance(cfg.Logging)
-	if err != nil {
-		return nil, err
-	}
+		// Configuration
+		err := r.RegisterInstance(cfg.Api)
+		if err != nil {
+			return err
+		}
 
-	// Services
-	err = c.RegisterTransientFactory(log.New)
-	if err != nil {
-		return nil, err
-	}
+		err = r.RegisterInstance(cfg.Logging)
+		if err != nil {
+			return err
+		}
 
-	err = c.RegisterSingletonFactory(api.NewChameleonApiServer)
+		// Services
+		err = r.RegisterFactory(log.New, camogo.SingletonLifetime)
+		if err != nil {
+			return err
+		}
+
+		err = r.RegisterFactory(api.NewChameleonApiServer, camogo.SingletonLifetime)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}

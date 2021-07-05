@@ -3,12 +3,12 @@ package mediator
 import (
 	"errors"
 	"fmt"
-	"github.com/yukitsune/chameleon/pkg/ioc"
+	"github.com/yukitsune/camogo"
 	"reflect"
 )
 
 type factoryRequestHandler struct {
-	container ioc.Container
+	container camogo.Container
 
 	handlerType reflect.Type
 	requestType reflect.Type
@@ -17,7 +17,7 @@ type factoryRequestHandler struct {
 	factory interface{}
 }
 
-func newFactoryRequestHandler(container ioc.Container, factory interface{}) (*factoryRequestHandler, error) {
+func newFactoryRequestHandler(container camogo.Container, factory interface{}) (*factoryRequestHandler, error) {
 	factoryType := reflect.TypeOf(factory)
 	if factoryType == nil {
 		return nil, errors.New("can't provide an untyped nil")
@@ -38,7 +38,9 @@ func newFactoryRequestHandler(container ioc.Container, factory interface{}) (*fa
 	}
 
 	// Todo: I'm not overly happy that we're mutating the container, but we need it's dependencies...
-	err = container.RegisterTransientFactory(factory)
+	err = container.Register(func (r *camogo.Registrar) error {
+		return r.RegisterFactory(factory, camogo.TransientLifetime)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +83,7 @@ func (h *factoryRequestHandler) Invoke(r interface{}) (interface{}, error) {
 			return method.Call(in)
 		})
 
-	res, err := h.container.ResolveInScopeWithResponse(fn.Interface())
+	res, err := h.container.ResolveWithResult(fn.Interface())
 	if err != nil {
 		return nil, err
 	}

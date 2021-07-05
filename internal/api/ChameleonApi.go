@@ -3,10 +3,10 @@ package api
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api/handlers/alias"
 	"github.com/yukitsune/chameleon/internal/api/routers"
 	"github.com/yukitsune/chameleon/internal/log"
-	"github.com/yukitsune/chameleon/pkg/ioc"
 	"github.com/yukitsune/chameleon/pkg/mediator"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,7 +17,7 @@ import (
 type ChameleonApiServer struct {
 	config    *Config
 	svr       *http.Server
-	container ioc.Container
+	container camogo.Container
 	log log.ChameleonLogger
 }
 
@@ -56,45 +56,52 @@ func (api *ChameleonApiServer) StartTLS() error {
 	return api.svr.ListenAndServeTLS(api.config.CertFile, api.config.KeyFile)
 }
 
-func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (ioc.Container, error) {
-	c := ioc.NewGolobbyContainer()
+func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Container, error) {
+	c := camogo.New()
 	var err error
 
-	err = c.RegisterSingletonInstance(logger)
-	if err != nil {
-		return nil, err
-	}
+	c.Register(func (r *camogo.Registrar) error {
 
-	err = c.RegisterSingletonInstance(dbConfig)
-	if err != nil {
-		return nil, err
-	}
+		err = r.RegisterInstance(logger)
+		if err != nil {
+			return err
+		}
 
-	err = c.RegisterTransientFactory(func (cfg *DbConfig) *gorm.DB {
-		// Todo: Handle error
-		db, _ := gorm.Open(postgres.Open(cfg.ConnectionString()), &gorm.Config{})
-		return db
+		err = r.RegisterInstance(dbConfig)
+		if err != nil {
+			return err
+		}
+
+		err = r.RegisterFactory(func (cfg *DbConfig) *gorm.DB {
+			// Todo: Handle error
+			db, _ := gorm.Open(postgres.Open(cfg.ConnectionString()), &gorm.Config{})
+			return db
+		},
+		camogo.TransientLifetime)
+		if err != nil {
+			return err
+		}
+
+		err = r.RegisterFactory(func () camogo.Container {
+			return c
+		},
+		camogo.TransientLifetime)
+		if err != nil {
+			return err
+		}
+
+		err = r.RegisterFactory(makeMediator, camogo.SingletonLifetime)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.RegisterSingletonFactory(func () ioc.Container {
-		return c
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.RegisterSingletonFactory(makeMediator)
-	if err != nil {
-		return nil, err
-	}
 
 	return c, nil
 }
 
-func makeHandler(container ioc.Container) http.Handler {
+func makeHandler(container camogo.Container) http.Handler {
 	m := mux.NewRouter()
 
 	routers.NewAliasRouter(m.PathPrefix("/alias").Subrouter(), container)
@@ -102,7 +109,7 @@ func makeHandler(container ioc.Container) http.Handler {
 	return m
 }
 
-func makeMediator(container ioc.Container) (*mediator.Mediator, error) {
+func makeMediator(container camogo.Container) (*mediator.Mediator, error) {
 	m := mediator.New(container)
 	var err error
 
