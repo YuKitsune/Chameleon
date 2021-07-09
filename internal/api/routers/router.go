@@ -34,31 +34,3 @@ func getRequest(r *http.Request) (v interface{}, err error) {
 
 	return v, nil
 }
-
-func writeResponse(w http.ResponseWriter, res interface{}, status int) {
-
-	resBytes, err := json.Marshal(res)
-	if err != nil {
-		writeError(w, err)
-		return
-	}
-
-	w.WriteHeader(status)
-	_, err = w.Write(resBytes)
-	if err != nil {
-		writeError(w, err)
-		return
-	}
-}
-func writeEmptyResponse(w http.ResponseWriter, status int) {
-	w.WriteHeader(status)
-}
-
-func writeError(w http.ResponseWriter, err error) {
-
-	// Todo: Handle different kinds of errors
-	switch err.(type) {
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-}

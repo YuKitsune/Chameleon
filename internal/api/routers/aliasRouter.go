@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api/model"
+	"github.com/yukitsune/chameleon/internal/api/responseWriterHelpers"
 	"github.com/yukitsune/chameleon/pkg/mediator"
 	"net/http"
 	"reflect"
@@ -46,14 +47,14 @@ func (router *AliasRouter) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse the request JSON
 	req, err := getRequest(r)
 	if err != nil {
-		writeError(w, err)
+		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Cast the request so we can send it over the mediator
 	createRequest, ok := req.(model.CreateAliasRequest)
 	if !ok {
-		writeError(w, model.CastFailedErr(reflect.TypeOf(&model.CreateAliasRequest{})))
+		responseWriterHelpers.WriteError(w, model.CastFailedErr(reflect.TypeOf(&model.CreateAliasRequest{})))
 		return
 	}
 
@@ -65,12 +66,12 @@ func (router *AliasRouter) Create(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		writeError(w, err)
+		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Write the response
-	writeResponse(w, res, http.StatusCreated)
+	responseWriterHelpers.WriteResponse(w, res, http.StatusCreated)
 }
 
 func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
@@ -79,13 +80,13 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sender, ok := vars["sender"]
 	if !ok {
-		writeError(w, MissingParameterErr("sender"))
+		responseWriterHelpers.WriteError(w, MissingParameterErr("sender"))
 		return
 	}
 
 	recipient, ok := vars["recipient"]
 	if !ok {
-		writeError(w, MissingParameterErr("recipient"))
+		responseWriterHelpers.WriteError(w, MissingParameterErr("recipient"))
 		return
 	}
 
@@ -104,12 +105,12 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		writeError(w, err)
+		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Write the response
-	writeResponse(w, res, http.StatusOK)
+	responseWriterHelpers.WriteResponse(w, res, http.StatusOK)
 }
 
 func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
@@ -117,14 +118,14 @@ func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
 	// Parse the request JSON
 	req, err := getRequest(r)
 	if err != nil {
-		writeError(w, err)
+		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Cast the request so we can send it over the mediator
 	updateRequest, ok := req.(model.UpdateAliasRequest)
 	if !ok {
-		writeError(w, model.CastFailedErr(reflect.TypeOf(&model.UpdateAliasRequest{})))
+		responseWriterHelpers.WriteError(w, model.CastFailedErr(reflect.TypeOf(&model.UpdateAliasRequest{})))
 		return
 	}
 
@@ -136,12 +137,12 @@ func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		writeError(w, err)
+		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Write the response
-	writeResponse(w, res, http.StatusOK)
+	responseWriterHelpers.WriteResponse(w, res, http.StatusOK)
 }
 
 func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
@@ -149,14 +150,14 @@ func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
 	// Parse the request JSON
 	req, err := getRequest(r)
 	if err != nil {
-		writeError(w, err)
+		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Cast the request so we can send it over the mediator
 	deleteRequest, ok := req.(model.DeleteAliasRequest)
 	if !ok {
-		writeError(w, model.CastFailedErr(reflect.TypeOf(&model.DeleteAliasRequest{})))
+		responseWriterHelpers.WriteError(w, model.CastFailedErr(reflect.TypeOf(&model.DeleteAliasRequest{})))
 		return
 	}
 
@@ -168,10 +169,10 @@ func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		writeError(w, err)
+		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Write the response
-	writeEmptyResponse(w, http.StatusOK)
+	responseWriterHelpers.WriteEmptyResponse(w, http.StatusOK)
 }

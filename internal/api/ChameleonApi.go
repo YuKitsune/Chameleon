@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api/handlers/alias"
+	"github.com/yukitsune/chameleon/internal/api/middleware"
 	"github.com/yukitsune/chameleon/internal/api/routers"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/mediator"
@@ -58,20 +59,23 @@ func (api *ChameleonApiServer) StartTLS() error {
 
 func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Container, error) {
 	c := camogo.New()
-	var err error
 
-	c.Register(func (r *camogo.Registrar) error {
+	err := c.Register(func (r *camogo.Registrar) error {
+		var err error
 
+		// Logger
 		err = r.RegisterInstance(logger)
 		if err != nil {
 			return err
 		}
 
+		// Database config
 		err = r.RegisterInstance(dbConfig)
 		if err != nil {
 			return err
 		}
 
+		// Database
 		err = r.RegisterFactory(func (cfg *DbConfig) *gorm.DB {
 			// Todo: Handle error
 			db, _ := gorm.Open(postgres.Open(cfg.ConnectionString()), &gorm.Config{})
@@ -82,6 +86,7 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 			return err
 		}
 
+		// The container itself
 		err = r.RegisterFactory(func () camogo.Container {
 			return c
 		},
@@ -90,6 +95,7 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 			return err
 		}
 
+		// Mediator
 		err = r.RegisterFactory(makeMediator, camogo.SingletonLifetime)
 		if err != nil {
 			return err
@@ -98,12 +104,22 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 		return nil
 	})
 
+	if err != nil {
+		return nil, err
+	}
+
 	return c, nil
 }
 
 func makeHandler(container camogo.Container) http.Handler {
 	m := mux.NewRouter()
 
+	// Middleware
+	// Panic recovery
+	panicRecoveryMiddleware := middleware.NewPanicRecovery(container)
+	m.Use(panicRecoveryMiddleware.Middleware)
+
+	// Endpoints
 	routers.NewAliasRouter(m.PathPrefix("/alias").Subrouter(), container)
 
 	return m
