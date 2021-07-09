@@ -16,12 +16,18 @@ ifneq ($(shell git status -s),)
 	GIT_DIRTY=true
 endif
 
+# Docker stuff
+
 ## Common docker build args
 DOCKER_BUILD_ARGS := \
 	--build-arg GIT_COMMIT="$(GIT_COMMIT)" \
 	--build-arg GIT_BRANCH="$(GIT_BRANCH)" \
 	--build-arg GIT_DIRTY="$(GIT_DIRTY)" \
 	--build-arg VERSION="$(VERSION)" \
+
+## The base docker-compose command
+PROJECT_NAME := chameleon
+DOCKER_COMPOSE_CMD := docker-compose --project-name $(PROJECT_NAME) --file ./deployments/docker-compose.yml up
 
 .DEFAULT_GOAL := help
 
@@ -70,8 +76,8 @@ build-mtd-container: ## Builds the docker container for the MTD
 
 .PHONY: compose
 compose: ## Runs docker compose
-	docker-compose --file ./deployments/docker-compose.yml up
+	$(DOCKER_COMPOSE_CMD)
 
 .PHONY: compose-fresh
 compose-fresh: ## Rebuilds the containers and forces a recreation
-	docker-compose --file ./deployments/docker-compose.yml up --build --force-recreate
+	$(DOCKER_COMPOSE_CMD) --build --force-recreate
