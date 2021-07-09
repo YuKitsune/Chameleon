@@ -9,7 +9,7 @@ require (
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.7.0
-	github.com/yukitsune/camogo v1.0.4 // indirect
+	github.com/yukitsune/camogo v1.0.4
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.9
 )
