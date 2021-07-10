@@ -6,6 +6,7 @@ import (
 	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api/handlers/alias"
 	"github.com/yukitsune/chameleon/internal/api/middleware"
+	"github.com/yukitsune/chameleon/internal/api/model"
 	"github.com/yukitsune/chameleon/internal/api/routers"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/mediator"
@@ -76,10 +77,18 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 		}
 
 		// Database
-		err = r.RegisterFactory(func (cfg *DbConfig) *gorm.DB {
-			// Todo: Handle error
-			db, _ := gorm.Open(postgres.Open(cfg.ConnectionString()), &gorm.Config{})
-			return db
+		err = r.RegisterFactory(func (cfg *DbConfig) (*gorm.DB, error) {
+			db, err := gorm.Open(postgres.Open(cfg.ConnectionString()), &gorm.Config{})
+			if err != nil {
+				return nil, err
+			}
+
+			err = db.AutoMigrate(&model.User{}, &model.Alias{})
+			if err != nil {
+				return nil, err
+			}
+
+			return db, nil
 		},
 		camogo.TransientLifetime)
 		if err != nil {
