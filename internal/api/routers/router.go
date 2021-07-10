@@ -11,7 +11,7 @@ type MissingParameterError struct {
 }
 
 func MissingParameterErr(parameterName string) *MissingParameterError {
-	return &MissingParameterError {
+	return &MissingParameterError{
 		parameterName: parameterName,
 	}
 }

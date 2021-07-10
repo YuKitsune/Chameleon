@@ -94,7 +94,7 @@ func serve(command *cobra.Command, args []string) error {
 
 func setupContainer(cfg *ChameleonApiConfig) (camogo.Container, error) {
 	c := camogo.New()
-	err := c.Register(func (r *camogo.Registrar) error {
+	err := c.Register(func(r *camogo.Registrar) error {
 
 		// Todo: Move to module
 

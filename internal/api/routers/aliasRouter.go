@@ -11,13 +11,13 @@ import (
 )
 
 type AliasRouter struct {
-	r *mux.Router
-	container camogo.Container
+	r            *mux.Router
+	container    camogo.Container
 	hasBeenSetUp bool
 }
 
 func NewAliasRouter(r *mux.Router, c camogo.Container) *AliasRouter {
-	router :=  &AliasRouter{
+	router := &AliasRouter{
 		r:         r,
 		container: c,
 	}
@@ -60,7 +60,7 @@ func (router *AliasRouter) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Send the request through the mediator
 	var res interface{}
-	err = router.container.Resolve(func (mediator *mediator.Mediator) error {
+	err = router.container.Resolve(func(mediator *mediator.Mediator) error {
 		res, err = mediator.Send(createRequest)
 		return err
 	})
@@ -99,7 +99,7 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 	// Send the request through the mediator
 	var res interface{}
 	var err error
-	err = router.container.Resolve(func (mediator *mediator.Mediator) error {
+	err = router.container.Resolve(func(mediator *mediator.Mediator) error {
 		res, err = mediator.Send(req)
 		return err
 	})
@@ -131,7 +131,7 @@ func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
 
 	// Send the request through the mediator
 	var res interface{}
-	err = router.container.Resolve(func (mediator *mediator.Mediator) error {
+	err = router.container.Resolve(func(mediator *mediator.Mediator) error {
 		res, err = mediator.Send(updateRequest)
 		return err
 	})
@@ -163,7 +163,7 @@ func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
 
 	// Send the request through the mediator
 	var res interface{}
-	err = router.container.Resolve(func (mediator *mediator.Mediator) error {
+	err = router.container.Resolve(func(mediator *mediator.Mediator) error {
 		res, err = mediator.Send(deleteRequest)
 		return err
 	})

@@ -6,7 +6,7 @@ import (
 
 type EntityInvalidError struct {
 	Entity interface{}
-	inner error
+	inner  error
 }
 
 func NewEntityInvalidErrorFromErr(entity interface{}, err error) *EntityInvalidError {

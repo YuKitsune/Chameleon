@@ -2,7 +2,7 @@ package mocks
 
 type MockRequestHandler struct {
 	ReceivedRequest *MockRequest
-	Response *MockResponse
+	Response        *MockResponse
 }
 
 func (h *MockRequestHandler) Handle(e *MockRequest) (*MockResponse, error) {

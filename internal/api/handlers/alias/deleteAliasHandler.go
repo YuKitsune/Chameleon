@@ -3,7 +3,6 @@ package alias
 import "github.com/yukitsune/chameleon/internal/api/model"
 
 type DeleteAliasHandler struct {
-
 }
 
 func NewDeleteAliasHandler() *DeleteAliasHandler {

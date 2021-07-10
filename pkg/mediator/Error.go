@@ -7,13 +7,13 @@ import (
 
 type Error struct {
 	handlerType reflect.Type
-	err     error
+	err         error
 }
 
 func NewError(handlerType reflect.Type, err error) *Error {
 	return &Error{
 		handlerType: handlerType,
-		err:     err,
+		err:         err,
 	}
 }
 

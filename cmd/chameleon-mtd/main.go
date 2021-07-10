@@ -62,7 +62,6 @@ func main() {
 	}
 }
 
-
 func serve(command *cobra.Command, args []string) error {
 
 	// Load the config

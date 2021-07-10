@@ -16,9 +16,9 @@ func (err *ErrHandlerNotFound) Error() string {
 }
 
 type Mediator struct {
-	eventHandlers []eventHandler
+	eventHandlers   []eventHandler
 	requestHandlers []requestHandler
-	container camogo.Container
+	container       camogo.Container
 }
 
 func New(c camogo.Container) *Mediator {

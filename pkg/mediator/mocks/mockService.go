@@ -1,7 +1,7 @@
 package mocks
 
 type MockService struct {
-	ReceivedEvent *MockEvent
+	ReceivedEvent   *MockEvent
 	ReceivedRequest *MockRequest
 }
 
@@ -30,7 +30,7 @@ func (m *MockService) GetReceivedRequest() *MockRequest {
 // Need a second one so we can register two at once without a collision
 
 type MockService2ElectricBoogaloo struct {
-	ReceivedEvent *MockEvent
+	ReceivedEvent   *MockEvent
 	ReceivedRequest *MockRequest
 }
 

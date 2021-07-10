@@ -3,7 +3,6 @@ package alias
 import "github.com/yukitsune/chameleon/internal/api/model"
 
 type UpdateAliasHandler struct {
-
 }
 
 func NewUpdateAliasHandler() *UpdateAliasHandler {

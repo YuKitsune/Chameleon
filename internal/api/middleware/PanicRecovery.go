@@ -24,7 +24,7 @@ func (m *PanicRecovery) Middleware(next http.Handler) http.Handler {
 				n := runtime.Stack(buf, false)
 				buf = buf[:n]
 
-				_ = m.container.Resolve(func (logger log.ChameleonLogger) {
+				_ = m.container.Resolve(func(logger log.ChameleonLogger) {
 					if logger.GetLevel() == log.TraceLevel {
 						logger.Errorf("Recovering from panic: %v\n%s\n", err, buf)
 					} else {

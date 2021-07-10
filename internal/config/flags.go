@@ -29,7 +29,7 @@ func SetupFlagsForConfig(cmd *cobra.Command, defaultInstance Config) error {
 		&Key{},
 		t,
 		v,
-		func (key *Key, field reflect.StructField, defaultValue reflect.Value) error {
+		func(key *Key, field reflect.StructField, defaultValue reflect.Value) error {
 
 			usageInfo := field.Tag.Get(usage)
 			defaultValueInterface := defaultValue.Interface()

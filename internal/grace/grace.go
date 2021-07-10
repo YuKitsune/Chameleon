@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 type shutdownHook func()
 type Grace struct {
 	shutdownHooks []shutdownHook

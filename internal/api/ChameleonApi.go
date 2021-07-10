@@ -20,13 +20,13 @@ type ChameleonApiServer struct {
 	config    *Config
 	svr       *http.Server
 	container camogo.Container
-	log log.ChameleonLogger
+	log       log.ChameleonLogger
 }
 
 func NewChameleonApiServer(config *Config, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
 	api := &ChameleonApiServer{
 		config: config,
-		log: logger,
+		log:    logger,
 	}
 
 	c, err := makeContainer(config.Database, logger)
@@ -61,7 +61,7 @@ func (api *ChameleonApiServer) StartTLS() error {
 func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Container, error) {
 	c := camogo.New()
 
-	err := c.Register(func (r *camogo.Registrar) error {
+	err := c.Register(func(r *camogo.Registrar) error {
 		var err error
 
 		// Logger
@@ -77,7 +77,7 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 		}
 
 		// Database
-		err = r.RegisterFactory(func (cfg *DbConfig) (*gorm.DB, error) {
+		err = r.RegisterFactory(func(cfg *DbConfig) (*gorm.DB, error) {
 			db, err := gorm.Open(postgres.Open(cfg.ConnectionString()), &gorm.Config{})
 			if err != nil {
 				return nil, err
@@ -90,16 +90,16 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 
 			return db, nil
 		},
-		camogo.TransientLifetime)
+			camogo.TransientLifetime)
 		if err != nil {
 			return err
 		}
 
 		// The container itself
-		err = r.RegisterFactory(func () camogo.Container {
+		err = r.RegisterFactory(func() camogo.Container {
 			return c
 		},
-		camogo.TransientLifetime)
+			camogo.TransientLifetime)
 		if err != nil {
 			return err
 		}

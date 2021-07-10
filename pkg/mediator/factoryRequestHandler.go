@@ -10,8 +10,8 @@ import (
 type factoryRequestHandler struct {
 	container camogo.Container
 
-	handlerType reflect.Type
-	requestType reflect.Type
+	handlerType  reflect.Type
+	requestType  reflect.Type
 	responseType reflect.Type
 
 	factory interface{}
@@ -38,7 +38,7 @@ func newFactoryRequestHandler(container camogo.Container, factory interface{}) (
 	}
 
 	// Todo: I'm not overly happy that we're mutating the container, but we need it's dependencies...
-	err = container.Register(func (r *camogo.Registrar) error {
+	err = container.Register(func(r *camogo.Registrar) error {
 		return r.RegisterFactory(factory, camogo.TransientLifetime)
 	})
 	if err != nil {
@@ -46,11 +46,11 @@ func newFactoryRequestHandler(container camogo.Container, factory interface{}) (
 	}
 
 	return &factoryRequestHandler{
-		container:   container,
-		handlerType: handlerType,
-		requestType: *requestType,
+		container:    container,
+		handlerType:  handlerType,
+		requestType:  *requestType,
 		responseType: *responseType,
-		factory:     factory,
+		factory:      factory,
 	}, nil
 }
 
@@ -58,8 +58,8 @@ func (h *factoryRequestHandler) Invoke(r interface{}) (interface{}, error) {
 
 	// Make the function type that we pass into our container to resolve the handler
 	// First type is the receiver, the rest are the args
-	fnIn := []reflect.Type {h.handlerType}
-	fnOut := []reflect.Type {h.responseType, reflect.ValueOf(errors.New).Type().Out(0)}
+	fnIn := []reflect.Type{h.handlerType}
+	fnOut := []reflect.Type{h.responseType, reflect.ValueOf(errors.New).Type().Out(0)}
 	fnType := reflect.FuncOf(fnIn, fnOut, false)
 
 	// Make the function
@@ -71,15 +71,15 @@ func (h *factoryRequestHandler) Invoke(r interface{}) (interface{}, error) {
 			handlerInstance := args[0]
 			method, requestType, _, err := getHandlerMethodAndRequestAndResponseType(handlerInstance.Interface())
 			if err != nil {
-				return []reflect.Value {reflect.ValueOf(nil), reflect.ValueOf(err)}
+				return []reflect.Value{reflect.ValueOf(nil), reflect.ValueOf(err)}
 			}
 
 			// Ensure the handler we got can handle the request we've received
 			if *requestType != reflect.TypeOf(r) {
-				return []reflect.Value {reflect.ValueOf(nil), reflect.ValueOf(ErrHandlerMethodNotFound{})}
+				return []reflect.Value{reflect.ValueOf(nil), reflect.ValueOf(ErrHandlerMethodNotFound{})}
 			}
 
-			in := []reflect.Value { reflect.ValueOf(r) }
+			in := []reflect.Value{reflect.ValueOf(r)}
 			return method.Call(in)
 		})
 

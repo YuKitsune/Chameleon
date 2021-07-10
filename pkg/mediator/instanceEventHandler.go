@@ -1,13 +1,12 @@
 package mediator
 
 import (
-"reflect"
+	"reflect"
 )
 
-
 type instanceEventHandler struct {
-	instance       interface{}
-	eventType   reflect.Type
+	instance      interface{}
+	eventType     reflect.Type
 	handlerMethod reflect.Value
 }
 
@@ -19,8 +18,8 @@ func newInstanceEventHandler(h interface{}) (*instanceEventHandler, error) {
 	}
 
 	return &instanceEventHandler{
-		instance:       h,
-		eventType:   *requestType,
+		instance:      h,
+		eventType:     *requestType,
 		handlerMethod: *method,
 	}, nil
 }
@@ -28,7 +27,7 @@ func newInstanceEventHandler(h interface{}) (*instanceEventHandler, error) {
 func (h *instanceEventHandler) Invoke(r interface{}) error {
 
 	// Setup our argument
-	in := []reflect.Value {reflect.ValueOf(r)}
+	in := []reflect.Value{reflect.ValueOf(r)}
 
 	// Invoke the handler
 	out := h.handlerMethod.Call(in)

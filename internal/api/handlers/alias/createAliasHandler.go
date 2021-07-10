@@ -30,7 +30,7 @@ func (handler *CreateAliasHandler) Handle(req *model.CreateAliasRequest) (*model
 
 	// Recipient must not be empty
 	if len(alias.Username) == 0 {
-		return nil, errors.NewEntityInvalidError(&alias,"username must not be empty")
+		return nil, errors.NewEntityInvalidError(&alias, "username must not be empty")
 	}
 
 	// Sender whitelist pattern must be valid regex
@@ -42,8 +42,8 @@ func (handler *CreateAliasHandler) Handle(req *model.CreateAliasRequest) (*model
 	// Ensure no duplicate entries exist
 	var dupe *model.Alias
 	handler.db.Where(&model.Alias{
-		UserID: alias.UserID,
-		Username: alias.Username,
+		UserID:                 alias.UserID,
+		Username:               alias.Username,
 		SenderWhitelistPattern: alias.SenderWhitelistPattern,
 	}).First(&dupe)
 	if dupe != nil {

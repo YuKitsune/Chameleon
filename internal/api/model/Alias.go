@@ -27,7 +27,7 @@ type CreateAliasRequest struct {
 }
 
 type GetAliasRequest struct {
-	Sender string
+	Sender    string
 	Recipient string
 }
 

@@ -3,11 +3,11 @@ package api
 import "fmt"
 
 type DbConfig struct {
-	Host     string    `mapstructure:"host"`
-	Port int `mapstructure:"port"`
-	User  string `mapstructure:"user"`
-	Password  string `mapstructure:"password"`
-	Database  string `mapstructure:"database"`
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	Database string `mapstructure:"database"`
 }
 
 func (c *DbConfig) ConnectionString() string {

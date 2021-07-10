@@ -16,7 +16,7 @@ func (k Key) String(sep string) string {
 	return strings.Join(k, sep)
 }
 
-type keyVisitor func (k *Key, f reflect.StructField, v reflect.Value) error
+type keyVisitor func(k *Key, f reflect.StructField, v reflect.Value) error
 
 func visitKeys(k *Key, t reflect.Type, v reflect.Value, fn keyVisitor) error {
 	var errs errors.Errors
