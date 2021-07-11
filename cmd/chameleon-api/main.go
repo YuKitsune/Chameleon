@@ -10,7 +10,7 @@ import (
 )
 
 type ChameleonApiConfig struct {
-	Api     *api.Config `mapstructure:"api"`
+	Api     *api.Config `mapstructure:"server"`
 	Logging *log.Config `mapstructure:"log"`
 }
 
