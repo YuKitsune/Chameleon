@@ -65,7 +65,10 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 		var err error
 
 		// Logger
-		err = r.RegisterInstance(logger)
+		err = r.RegisterFactory(func () log.ChameleonLogger {
+			return logger
+		},
+		camogo.TransientLifetime)
 		if err != nil {
 			return err
 		}
@@ -90,7 +93,7 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 
 			return db, nil
 		},
-			camogo.TransientLifetime)
+		camogo.TransientLifetime)
 		if err != nil {
 			return err
 		}
@@ -99,7 +102,7 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 		err = r.RegisterFactory(func() camogo.Container {
 			return c
 		},
-			camogo.TransientLifetime)
+		camogo.TransientLifetime)
 		if err != nil {
 			return err
 		}
