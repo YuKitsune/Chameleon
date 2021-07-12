@@ -1,9 +1,9 @@
-api:
+server:
   port: 80
   certificate-file:
   key-file:
   database:
-    host: database
+    host: localhost
     port: 5432
     user: chameleon
     password: chameleon
