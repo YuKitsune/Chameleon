@@ -2,6 +2,8 @@ package responseWriterHelpers
 
 import (
 	"encoding/json"
+	"github.com/yukitsune/chameleon/internal/api/handlers/errors"
+	"github.com/yukitsune/chameleon/pkg/mediator"
 	"net/http"
 )
 
@@ -29,6 +31,17 @@ func WriteError(w http.ResponseWriter, err error) {
 
 	// Todo: Handle different kinds of errors
 	switch err.(type) {
+
+	// Unwrap mediator errors
+	case *mediator.Error:
+		mediatorError := err.(*mediator.Error)
+		WriteError(w, mediatorError.Unwrap())
+		break
+
+	case *errors.EntityNotFoundError:
+		w.WriteHeader(http.StatusNotFound)
+		break
+
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 	}

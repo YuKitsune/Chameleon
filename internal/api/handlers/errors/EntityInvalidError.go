@@ -14,7 +14,7 @@ func NewEntityInvalidErrorFromErr(entity interface{}, err error) *EntityInvalidE
 }
 
 func NewEntityInvalidError(entity interface{}, format string, args ...interface{}) *EntityInvalidError {
-	return &EntityInvalidError{entity, fmt.Errorf(format, args)}
+	return &EntityInvalidError{entity, fmt.Errorf(format, args...)}
 }
 
 func (err *EntityInvalidError) Error() string {

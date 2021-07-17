@@ -27,7 +27,9 @@ DOCKER_BUILD_ARGS := \
 
 ## The base docker-compose command
 PROJECT_NAME := chameleon
-DOCKER_COMPOSE_CMD := docker-compose --project-name $(PROJECT_NAME) --file ./deployments/docker-compose.yml up
+DOCKER_COMPOSE_CMD := docker-compose --project-name $(PROJECT_NAME) --file ./deployments/docker-compose.yml
+
+# Commands
 
 .DEFAULT_GOAL := help
 
@@ -41,22 +43,15 @@ build: ## Builds all programs and places their binaries in the bin/ directory
 	go build -ldflags="$(LD_FLAGS)" -o ./bin/  ./cmd/...
 
 .PHONY: test
-test: ## Runs all tests
-	go test ./...
+test: compose-fresh-detach ## Runs all tests
+	go test -v ./...
 
 .PHONY: clean
 clean: ## Removes the bin/ directory
 	rm -rf bin
 
 .PHONY: build-containers
-build-containers: build-database-container build-api-container build-mtd-container ## Builds a docker container for all programs
-
-.PHONY: build-database-container
-build-database-container: ## Builds the docker container for the database
-	docker build \
-		-t chameleon-db \
-		-f build/package/database/Dockerfile \
-		.
+build-containers: build-api-container build-mtd-container ## Builds a docker container for all programs
 
 .PHONY: build-api-container
 build-api-container: ## Builds the docker container for the REST API server
@@ -74,10 +69,22 @@ build-mtd-container: ## Builds the docker container for the MTD
 		$(DOCKER_BUILD_ARGS) \
 		.
 
-.PHONY: compose
+.PHONY: compose-up
 compose: ## Runs docker compose
-	$(DOCKER_COMPOSE_CMD)
+	$(DOCKER_COMPOSE_CMD) up
+
+.PHONY: compose-up-detach
+compose-detach: ## Runs docker compose in detached mode
+	$(DOCKER_COMPOSE_CMD) up --detach
 
 .PHONY: compose-fresh
 compose-fresh: ## Rebuilds the containers and forces a recreation
-	$(DOCKER_COMPOSE_CMD) --build --force-recreate
+	$(DOCKER_COMPOSE_CMD) up --build --force-recreate
+
+.PHONY: compose-fresh-detach
+compose-fresh-detach: ## Rebuilds the containers and forces a recreation in detached mode
+	$(DOCKER_COMPOSE_CMD) up --build --force-recreate --detach
+
+.PHONY: compose-down
+compose: ## Tears down the docker instances created by compose-up
+	$(DOCKER_COMPOSE_CMD) down

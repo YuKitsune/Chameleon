@@ -7,7 +7,6 @@ import (
 	"github.com/yukitsune/chameleon/internal/api/responseWriterHelpers"
 	"github.com/yukitsune/chameleon/pkg/mediator"
 	"net/http"
-	"reflect"
 )
 
 type AliasRouter struct {
@@ -31,13 +30,13 @@ func (router *AliasRouter) setup() {
 		return
 	}
 
-	router.r.HandleFunc("/create", router.Create)
-	router.r.HandleFunc("", router.Read).
+	router.r.HandleFunc("", router.Create).Methods("POST")
+	router.r.HandleFunc("", router.Read).Methods("GET").
 		Queries(
 			"sender", "{sender}",
 			"recipient", "{recipient}")
-	router.r.HandleFunc("/update", router.Update)
-	router.r.HandleFunc("/delete", router.Delete)
+	router.r.HandleFunc("", router.Update).Methods("PUT")
+	router.r.HandleFunc("", router.Delete).Methods("DELETE")
 
 	router.hasBeenSetUp = true
 }
@@ -45,24 +44,16 @@ func (router *AliasRouter) setup() {
 func (router *AliasRouter) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Parse the request JSON
-	req, err := getRequest(r)
+	var createRequest model.CreateAliasRequest
+	err := getRequest(r, &createRequest)
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
-	// Cast the request so we can send it over the mediator
-	createRequest, ok := req.(model.CreateAliasRequest)
-	if !ok {
-		responseWriterHelpers.WriteError(w, model.CastFailedErr(reflect.TypeOf(&model.CreateAliasRequest{})))
-		return
-	}
-
 	// Send the request through the mediator
-	var res interface{}
-	err = router.container.Resolve(func(mediator *mediator.Mediator) error {
-		res, err = mediator.Send(createRequest)
-		return err
+	res, err := router.container.ResolveWithResult(func(mediator *mediator.Mediator) (interface{}, error) {
+		return mediator.Send(&createRequest)
 	})
 
 	if err != nil {
@@ -97,11 +88,8 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	var res interface{}
-	var err error
-	err = router.container.Resolve(func(mediator *mediator.Mediator) error {
-		res, err = mediator.Send(req)
-		return err
+	res, err := router.container.ResolveWithResult(func(mediator *mediator.Mediator) (interface{}, error) {
+		return mediator.Send(req)
 	})
 
 	if err != nil {
@@ -116,24 +104,16 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
 
 	// Parse the request JSON
-	req, err := getRequest(r)
+	var updateRequest model.UpdateAliasRequest
+	err := getRequest(r, &updateRequest)
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
-	// Cast the request so we can send it over the mediator
-	updateRequest, ok := req.(model.UpdateAliasRequest)
-	if !ok {
-		responseWriterHelpers.WriteError(w, model.CastFailedErr(reflect.TypeOf(&model.UpdateAliasRequest{})))
-		return
-	}
-
 	// Send the request through the mediator
-	var res interface{}
-	err = router.container.Resolve(func(mediator *mediator.Mediator) error {
-		res, err = mediator.Send(updateRequest)
-		return err
+	res, err := router.container.ResolveWithResult(func(mediator *mediator.Mediator) (interface{}, error) {
+		return mediator.Send(&updateRequest)
 	})
 
 	if err != nil {
@@ -148,24 +128,16 @@ func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
 func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
 
 	// Parse the request JSON
-	req, err := getRequest(r)
+	var deleteRequest model.DeleteAliasRequest
+	err := getRequest(r, &deleteRequest)
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
-	// Cast the request so we can send it over the mediator
-	deleteRequest, ok := req.(model.DeleteAliasRequest)
-	if !ok {
-		responseWriterHelpers.WriteError(w, model.CastFailedErr(reflect.TypeOf(&model.DeleteAliasRequest{})))
-		return
-	}
-
 	// Send the request through the mediator
-	var res interface{}
-	err = router.container.Resolve(func(mediator *mediator.Mediator) error {
-		res, err = mediator.Send(deleteRequest)
-		return err
+	_, err = router.container.ResolveWithResult(func(mediator *mediator.Mediator) (interface{}, error) {
+		return mediator.Send(&deleteRequest)
 	})
 
 	if err != nil {

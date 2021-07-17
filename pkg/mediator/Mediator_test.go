@@ -2,8 +2,9 @@ package mediator
 
 import (
 	"fmt"
-	"github.com/yukitsune/chameleon/pkg/ioc"
+	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/pkg/mediator/mocks"
+	"github.com/yukitsune/chameleon/pkg/testUtils"
 	"reflect"
 	"strings"
 	"testing"
@@ -12,7 +13,7 @@ import (
 func TestMediator_Publish(t *testing.T) {
 
 	t.Run("No Event Handlers", func(t *testing.T) {
-		c := ioc.NewGolobbyContainer()
+		c := camogo.New()
 		m := New(c)
 
 		r := mocks.MockEvent{
@@ -21,7 +22,7 @@ func TestMediator_Publish(t *testing.T) {
 
 		err := m.Publish(r)
 		if err != nil {
-			failOnError(t, err, "Publish() should not return an error")
+			testUtils.FailOnError(t, err, "Publish() should not return an error")
 			return
 		}
 	})
@@ -29,7 +30,7 @@ func TestMediator_Publish(t *testing.T) {
 	t.Run("Single Event Handler Instance", func(t *testing.T) {
 		testMediatorPublish(
 			nil,
-			func(m *Mediator, _ ioc.Container) (*[]mocks.EventRecipient, error) {
+			func(m *Mediator, _ camogo.Container) (*[]mocks.EventRecipient, error) {
 				h := &mocks.MockEventHandler{}
 				m.AddEventHandlerInstance(h)
 				return &[]mocks.EventRecipient{h}, nil
@@ -40,7 +41,7 @@ func TestMediator_Publish(t *testing.T) {
 	t.Run("Multiple Event Handler Instances", func(t *testing.T) {
 		testMediatorPublish(
 			nil,
-			func(m *Mediator, _ ioc.Container) (*[]mocks.EventRecipient, error) {
+			func(m *Mediator, _ camogo.Container) (*[]mocks.EventRecipient, error) {
 				h1 := &mocks.MockEventHandler{}
 				m.AddEventHandlerInstance(h1)
 
@@ -53,15 +54,18 @@ func TestMediator_Publish(t *testing.T) {
 	})
 
 	t.Run("Single Event Handler Factory", func(t *testing.T) {
-		setupContainer := func(c ioc.Container) (*[]mocks.EventRecipient, error) {
-			err := c.RegisterSingletonFactory(mocks.NewMockService)
+		setupContainer := func(c camogo.Container) (*[]mocks.EventRecipient, error) {
+			err := c.Register(func (r *camogo.Registrar) error {
+				return r.RegisterFactory(mocks.NewMockService, camogo.SingletonLifetime)
+			})
+
 			if err != nil {
 				return nil, err
 			}
 
 			// Rip the recipient out of the container so we can assert that it received the event
 			var r mocks.EventRecipient
-			err = c.ResolveInScope(func(s *mocks.MockService) { r = s })
+			err = c.Resolve(func(s *mocks.MockService) { r = s })
 			if err != nil {
 				return nil, err
 			}
@@ -71,7 +75,7 @@ func TestMediator_Publish(t *testing.T) {
 
 		testMediatorPublish(
 			&setupContainer,
-			func(m *Mediator, c ioc.Container) (*[]mocks.EventRecipient, error) {
+			func(m *Mediator, c camogo.Container) (*[]mocks.EventRecipient, error) {
 				m.AddEventHandlerFactory(mocks.NewMockHandlerWithService)
 				return nil, nil
 			},
@@ -79,13 +83,21 @@ func TestMediator_Publish(t *testing.T) {
 	})
 
 	t.Run("Multiple Event Handler Factories", func(t *testing.T) {
-		setupContainer := func(c ioc.Container) (*[]mocks.EventRecipient, error) {
-			err := c.RegisterSingletonFactory(mocks.NewMockService)
-			if err != nil {
-				return nil, err
-			}
+		setupContainer := func(c camogo.Container) (*[]mocks.EventRecipient, error) {
+			err := c.Register(func (r *camogo.Registrar) error {
+				err := r.RegisterFactory(mocks.NewMockService, camogo.SingletonLifetime)
+				if err != nil {
+					return err
+				}
 
-			err = c.RegisterSingletonFactory(mocks.NewMockService2ElectricBoogaloo)
+				err = r.RegisterFactory(mocks.NewMockService2ElectricBoogaloo, camogo.SingletonLifetime)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			})
+
 			if err != nil {
 				return nil, err
 			}
@@ -93,7 +105,7 @@ func TestMediator_Publish(t *testing.T) {
 			// Rip the recipients out of the container so we can assert that it received the event
 			var r1 mocks.EventRecipient
 			var r2 mocks.EventRecipient
-			err = c.ResolveInScope(func(s1 *mocks.MockService, s2 *mocks.MockService2ElectricBoogaloo) {
+			err = c.Resolve(func(s1 *mocks.MockService, s2 *mocks.MockService2ElectricBoogaloo) {
 				r1 = s1
 				r2 = s2
 			})
@@ -106,7 +118,7 @@ func TestMediator_Publish(t *testing.T) {
 
 		testMediatorPublish(
 			&setupContainer,
-			func(m *Mediator, c ioc.Container) (*[]mocks.EventRecipient, error) {
+			func(m *Mediator, c camogo.Container) (*[]mocks.EventRecipient, error) {
 				m.AddEventHandlerFactory(mocks.NewMockHandlerWithService)
 				m.AddEventHandlerFactory(mocks.NewMockHandlerWithService2ElectricBoogaloo)
 				return nil, nil
@@ -116,12 +128,12 @@ func TestMediator_Publish(t *testing.T) {
 }
 
 func testMediatorPublish(
-	setupContainer *func(ioc.Container) (*[]mocks.EventRecipient, error),
-	setupMediator func(*Mediator, ioc.Container) (*[]mocks.EventRecipient, error),
+	setupContainer *func(camogo.Container) (*[]mocks.EventRecipient, error),
+	setupMediator func(*Mediator, camogo.Container) (*[]mocks.EventRecipient, error),
 	t *testing.T) {
 	var err error
 
-	c := ioc.NewGolobbyContainer()
+	c := camogo.New()
 
 	// Setup the container if we've been given a function for it
 	var recipientsFromServices *[]mocks.EventRecipient
@@ -129,7 +141,7 @@ func testMediatorPublish(
 		setupServicesFn := *setupContainer
 		recipientsFromServices, err = setupServicesFn(c)
 		if err != nil {
-			failOnError(t, err, "container setup should not fail")
+			testUtils.FailOnError(t, err, "container setup should not fail")
 			return
 		}
 	}
@@ -137,7 +149,7 @@ func testMediatorPublish(
 	m := New(c)
 	recipientsFromMediator, err := setupMediator(m, c)
 	if err != nil {
-		failOnError(t, err, "mediator setup should not fail")
+		testUtils.FailOnError(t, err, "mediator setup should not fail")
 		return
 	}
 
@@ -162,7 +174,7 @@ func testMediatorPublish(
 
 	err = m.Publish(r)
 	if err != nil {
-		failOnError(t, err, "Publish() should not return an error")
+		testUtils.FailOnError(t, err, "Publish() should not return an error")
 		return
 	}
 
@@ -186,7 +198,7 @@ func testMediatorPublish(
 func TestMediator_Send(t *testing.T) {
 
 	t.Run("No Request Handlers", func(t *testing.T) {
-		c := ioc.NewGolobbyContainer()
+		c := camogo.New()
 		m := New(c)
 
 		r := mocks.MockRequest{
@@ -201,7 +213,7 @@ func TestMediator_Send(t *testing.T) {
 		}
 
 		if err != nil {
-			failOnError(t, err, "Send() should not return an error")
+			testUtils.FailOnError(t, err, "Send() should not return an error")
 			return
 		}
 	})
@@ -217,9 +229,11 @@ func TestMediator_Send(t *testing.T) {
 	})
 
 	t.Run("Request Handler Factory", func(t *testing.T) {
-		setupContainer := func(c ioc.Container) error {
+		setupContainer := func(c camogo.Container) error {
 			service := mocks.NewMockService()
-			return c.RegisterSingletonInstance(service)
+			return c.Register(func (r *camogo.Registrar) error {
+				return r.RegisterInstance(service)
+			})
 		}
 
 		testMediatorSend(
@@ -233,19 +247,19 @@ func TestMediator_Send(t *testing.T) {
 }
 
 func testMediatorSend(
-	setupContainer *func(ioc.Container) error,
+	setupContainer *func(camogo.Container) error,
 	setupMediator func(*Mediator) error,
 	t *testing.T) {
 	var err error
 
-	c := ioc.NewGolobbyContainer()
+	c := camogo.New()
 
 	// Setup the container if we've been given a function for it
 	if setupContainer != nil {
 		setupServicesFn := *setupContainer
 		err = setupServicesFn(c)
 		if err != nil {
-			failOnError(t, err, "container setup should not fail")
+			testUtils.FailOnError(t, err, "container setup should not fail")
 			return
 		}
 	}
@@ -253,7 +267,7 @@ func testMediatorSend(
 	m := New(c)
 	err = setupMediator(m)
 	if err != nil {
-		failOnError(t, err, "mediator setup should not fail")
+		testUtils.FailOnError(t, err, "mediator setup should not fail")
 		return
 	}
 
@@ -264,7 +278,7 @@ func testMediatorSend(
 
 	res, err := m.Send(r)
 	if err != nil {
-		failOnError(t, err, "Send() should not return an error")
+		testUtils.FailOnError(t, err, "Send() should not return an error")
 		return
 	}
 
@@ -338,7 +352,7 @@ func TestMediator_Publish_ReturnsUsefulError(t *testing.T) {
 }
 
 func testMediatorPublishReturnsUsefulError(setupMediator func(*Mediator) (*[]interface{}, *[]interface{}), t *testing.T) {
-	c := ioc.NewGolobbyContainer()
+	c := camogo.New()
 	m := New(c)
 
 	handlerInstances, handlerFactories := setupMediator(m)
@@ -372,7 +386,7 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 }
 
 func testMediatorSendReturnsUsefulError(setupMediator func(*Mediator) (*[]interface{}, *[]interface{}), t *testing.T) {
-	c := ioc.NewGolobbyContainer()
+	c := camogo.New()
 	m := New(c)
 
 	handlerInstances, handlerFactories := setupMediator(m)
@@ -451,9 +465,4 @@ func testErrorIsUseful(
 			return
 		}
 	}
-}
-
-func failOnError(t *testing.T, err error, reason string) {
-	t.Logf("%s, found %v", reason, err)
-	t.Fail()
 }

@@ -7,7 +7,6 @@ import (
 
 type Alias struct {
 	gorm.Model
-	UserID                 uint
 	Username               string
 	SenderWhitelistPattern string
 }

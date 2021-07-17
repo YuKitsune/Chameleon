@@ -22,6 +22,7 @@ services:
       CHAMELEON_API_SERVER_DATABASE_USER: chameleon
       CHAMELEON_API_SERVER_DATABASE_PASSWORD: chameleon
       CHAMELEON_API_SERVER_DATABASE_DATABASE: chameleon
+      CHAMELEON_LOG_LEVEL: trace
     depends_on:
       - database
 

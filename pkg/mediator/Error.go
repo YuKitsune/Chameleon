@@ -20,3 +20,7 @@ func NewError(handlerType reflect.Type, err error) *Error {
 func (e Error) Error() string {
 	return fmt.Sprintf("Handler: %s Error: %s", e.handlerType.String(), e.err.Error())
 }
+
+func (e Error) Unwrap() error {
+	return e.err
+}

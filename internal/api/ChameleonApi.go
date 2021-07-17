@@ -86,7 +86,7 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 				return nil, err
 			}
 
-			err = db.AutoMigrate(&model.User{}, &model.Alias{})
+			err = db.AutoMigrate(&model.Alias{})
 			if err != nil {
 				return nil, err
 			}
