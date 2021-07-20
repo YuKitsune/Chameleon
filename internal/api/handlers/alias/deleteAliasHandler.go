@@ -15,11 +15,11 @@ func NewDeleteAliasHandler(db *gorm.DB, log log.ChameleonLogger) *DeleteAliasHan
 	return &DeleteAliasHandler{db, log}
 }
 
-func (handler *DeleteAliasHandler) Handle(req *model.DeleteAliasRequest) (bool, error) {
-	res := handler.db.Delete(&req.Alias)
+func (handler *DeleteAliasHandler) Handle(req *model.DeleteAliasRequest) (*model.DeleteAliasResponse, error) {
+	res := handler.db.Delete(&model.Alias{}, req.Alias.ID)
 	if res.Error != nil {
-		return false, res.Error
+		return &model.DeleteAliasResponse{Deleted: false}, res.Error
 	}
 
-	return true, nil
+	return &model.DeleteAliasResponse{Deleted: true}, nil
 }

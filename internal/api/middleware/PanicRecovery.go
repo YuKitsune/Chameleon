@@ -25,11 +25,7 @@ func (m *PanicRecovery) Middleware(next http.Handler) http.Handler {
 				buf = buf[:n]
 
 				_ = m.container.Resolve(func(logger log.ChameleonLogger) {
-					if logger.GetLevel() == log.TraceLevel {
-						logger.Errorf("Recovering from panic: %v\n%s\n", err, buf)
-					} else {
-						logger.Errorf("Recovering from panic: %v\n", err)
-					}
+					logger.Errorf("Recovering from panic: %v\n%s\n", err, buf)
 				})
 
 				responseWriterHelpers.WriteEmptyResponse(w, http.StatusInternalServerError)
