@@ -2,17 +2,19 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/yukitsune/camogo"
+	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/handlers/alias"
 	"github.com/yukitsune/chameleon/internal/api/middleware"
-	"github.com/yukitsune/chameleon/internal/api/model"
 	"github.com/yukitsune/chameleon/internal/api/routers"
 	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/pkg/mediator"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -80,18 +82,22 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 		}
 
 		// Database
-		err = r.RegisterFactory(func(cfg *DbConfig) (*gorm.DB, error) {
-			db, err := gorm.Open(postgres.Open(cfg.ConnectionString()), &gorm.Config{})
+		err = r.RegisterFactory(func(cfg *DbConfig) (*db.MongoConnectionWrapper, error) {
+
+			uri := fmt.Sprintf(
+				"mongodb://%s:%s@%s:%d/%s",
+				url.QueryEscape(cfg.User),
+				url.QueryEscape(cfg.Password),
+				url.QueryEscape(cfg.Host),
+				cfg.Port,
+				url.QueryEscape(cfg.Database))
+			client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 			if err != nil {
 				return nil, err
 			}
 
-			err = db.AutoMigrate(&model.Alias{})
-			if err != nil {
-				return nil, err
-			}
-
-			return db, nil
+			wrapper := &db.MongoConnectionWrapper{Client: client, Database: cfg.Database}
+			return wrapper, nil
 		},
 		camogo.TransientLifetime)
 		if err != nil {

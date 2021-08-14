@@ -1,20 +1,24 @@
 package alias
 
 import (
+	"context"
+	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/handlers/errors"
 	"github.com/yukitsune/chameleon/internal/api/model"
 	"github.com/yukitsune/chameleon/internal/log"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"regexp"
 )
 
 type CreateAliasHandler struct {
-	db *gorm.DB
+	ctx context.Context
+	db *db.MongoConnectionWrapper
 	log log.ChameleonLogger
 }
 
-func NewCreateAliasHandler(db *gorm.DB, log log.ChameleonLogger) *CreateAliasHandler {
-	return &CreateAliasHandler{db, log}
+func NewCreateAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper , log log.ChameleonLogger) *CreateAliasHandler {
+	return &CreateAliasHandler{ctx, db, log}
 }
 
 func (handler *CreateAliasHandler) Handle(req *model.CreateAliasRequest) (*model.Alias, error) {
@@ -41,19 +45,29 @@ func (handler *CreateAliasHandler) Handle(req *model.CreateAliasRequest) (*model
 	}
 
 	// Ensure no duplicate entries exist
-	var dupes int64
-	handler.db.Where(&model.Alias{
-		Username:               alias.Username,
-		SenderWhitelistPattern: alias.SenderWhitelistPattern,
-	}).Count(&dupes)
-	if dupes != 0 {
-		return nil, errors.NewEntityExistsError(&alias)
-	}
+	err = handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {
+		collection := db.Collection("alias")
+		dupes, err := collection.CountDocuments(ctx, bson.M{
+			"Username": alias.Username,
+			"SenderWhitelistPattern": alias.SenderWhitelistPattern,
+		})
+		if err != nil {
+			return err
+		}
+		if dupes != 0 {
+			return errors.NewEntityExistsError(&alias)
+		}
 
-	// All good, create the record
-	result := handler.db.Create(&alias)
-	if result.Error != nil {
-		return nil, result.Error
+		// All good, create the record
+		_, err = collection.InsertOne(handler.ctx, alias)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return &alias, nil

@@ -1,12 +1,11 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"regexp"
 )
 
 type Alias struct {
-	gorm.Model
+	Id string `bson:"_id"`
 	Username               string
 	SenderWhitelistPattern string
 }

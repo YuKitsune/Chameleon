@@ -69,11 +69,11 @@ build-mtd-container: ## Builds the docker container for the MTD
 		$(DOCKER_BUILD_ARGS) \
 		.
 
-.PHONY: compose-up
+.PHONY: compose
 compose: ## Runs docker compose
 	$(DOCKER_COMPOSE_CMD) up
 
-.PHONY: compose-up-detach
+.PHONY: compose-detach
 compose-detach: ## Runs docker compose in detached mode
 	$(DOCKER_COMPOSE_CMD) up --detach
 
@@ -86,5 +86,5 @@ compose-fresh-detach: ## Rebuilds the containers and forces a recreation in deta
 	$(DOCKER_COMPOSE_CMD) up --build --force-recreate --detach
 
 .PHONY: compose-down
-compose: ## Tears down the docker instances created by compose-up
+compose-down: ## Tears down the docker instances created by compose-up
 	$(DOCKER_COMPOSE_CMD) down

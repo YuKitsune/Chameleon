@@ -1,31 +1,32 @@
 package alias
 
 import (
+	"context"
+	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/model"
 	"github.com/yukitsune/chameleon/internal/log"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UpdateAliasHandler struct {
-	db *gorm.DB
+	ctx context.Context
+	db *db.MongoConnectionWrapper
 	log log.ChameleonLogger
 }
 
-func NewUpdateAliasHandler(db *gorm.DB, log log.ChameleonLogger) *UpdateAliasHandler {
-	return &UpdateAliasHandler{db, log}
+func NewUpdateAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *UpdateAliasHandler {
+	return &UpdateAliasHandler{ctx, db, log}
 }
 
 func (handler *UpdateAliasHandler) Handle(req *model.UpdateAliasRequest) (*model.Alias, error) {
 
-	var alias model.Alias
-	res := handler.db.First(&alias, req.Alias.ID)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	res = handler.db.Save(alias)
-	if res.Error != nil {
-		return nil, res.Error
+	err := handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {
+		collection := db.Collection("alias")
+		_, err := collection.UpdateByID(handler.ctx, req.Alias.Id, req.Alias)
+		return err
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return &req.Alias, nil

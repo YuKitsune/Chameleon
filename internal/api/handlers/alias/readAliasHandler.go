@@ -1,28 +1,48 @@
 package alias
 
 import (
+	"context"
+	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/handlers/errors"
 	"github.com/yukitsune/chameleon/internal/api/model"
 	"github.com/yukitsune/chameleon/internal/log"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"regexp"
 )
 
 type ReadAliasHandler struct {
-	db *gorm.DB
+	ctx context.Context
+	db *db.MongoConnectionWrapper
 	log log.ChameleonLogger
 }
 
-func NewReadAliasHandler(db *gorm.DB, log log.ChameleonLogger) *ReadAliasHandler {
-	return &ReadAliasHandler{db, log}
+func NewReadAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *ReadAliasHandler {
+	return &ReadAliasHandler{ctx, db, log}
 }
 
 func (handler *ReadAliasHandler) Handle(req *model.GetAliasRequest) (*model.Alias, error) {
 
 	var allAliasesForRecipient []model.Alias
-	handler.db.Where(&model.Alias{
-		Username: req.Recipient,
-	}).Find(&allAliasesForRecipient)
+	err := handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {
+		collection := db.Collection("alias")
+		cur, err := collection.Find(handler.ctx, bson.M{
+			"Username": req.Recipient,
+		})
+		if err != nil {
+			return err
+		}
+
+		err = cur.All(handler.ctx, &allAliasesForRecipient)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	for _, alias := range allAliasesForRecipient {
 		isMatch, err := regexp.MatchString(alias.SenderWhitelistPattern, req.Sender)

@@ -1,13 +1,13 @@
 version: "3.9"
 services:
   database:
-    image: 'postgres:latest'
+    restart: always
+    image: 'mongo:latest'
     ports:
-      - 5432:5432
+      - "27017:27017"
     environment:
-      POSTGRES_USER: chameleon
-      POSTGRES_PASSWORD: chameleon
-      POSTGRES_DB: chameleon
+      MONGO_INITDB_ROOT_USERNAME: chameleon
+      MONGO_INITDB_ROOT_PASSWORD: chameleon
 
   api:
     build:
@@ -18,7 +18,7 @@ services:
     environment:
       CHAMELEON_API_SERVER_PORT: 8000
       CHAMELEON_API_SERVER_DATABASE_HOST: database
-      CHAMELEON_API_SERVER_DATABASE_PORT: 5432
+      CHAMELEON_API_SERVER_DATABASE_PORT: 27017
       CHAMELEON_API_SERVER_DATABASE_USER: chameleon
       CHAMELEON_API_SERVER_DATABASE_PASSWORD: chameleon
       CHAMELEON_API_SERVER_DATABASE_DATABASE: chameleon

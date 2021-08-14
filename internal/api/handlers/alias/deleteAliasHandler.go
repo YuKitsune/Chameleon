@@ -1,25 +1,39 @@
 package alias
 
 import (
+	"context"
+	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/model"
 	"github.com/yukitsune/chameleon/internal/log"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type DeleteAliasHandler struct {
-	db *gorm.DB
+	ctx context.Context
+	db *db.MongoConnectionWrapper
 	log log.ChameleonLogger
 }
 
-func NewDeleteAliasHandler(db *gorm.DB, log log.ChameleonLogger) *DeleteAliasHandler {
-	return &DeleteAliasHandler{db, log}
+func NewDeleteAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *DeleteAliasHandler {
+	return &DeleteAliasHandler{ctx, db, log}
 }
 
 func (handler *DeleteAliasHandler) Handle(req *model.DeleteAliasRequest) (*model.DeleteAliasResponse, error) {
-	res := handler.db.Delete(&model.Alias{}, req.Alias.ID)
-	if res.Error != nil {
-		return &model.DeleteAliasResponse{Deleted: false}, res.Error
+	deleted := false
+	err := handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {
+		collection := db.Collection("alias")
+		_, err := collection.DeleteOne(handler.ctx, bson.M{"_id": req.Alias.Id})
+		if err != nil {
+			return err
+		}
+
+		deleted = true
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return &model.DeleteAliasResponse{Deleted: true}, nil
+	return &model.DeleteAliasResponse{Deleted: deleted}, nil
 }
