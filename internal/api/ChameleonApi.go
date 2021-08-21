@@ -66,6 +66,14 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 	err := c.Register(func(r *camogo.Registrar) error {
 		var err error
 
+		err = r.RegisterFactory(func () context.Context {
+			return context.TODO()
+		},
+		camogo.TransientLifetime)
+		if err != nil {
+			return err
+		}
+
 		// Logger
 		err = r.RegisterFactory(func () log.ChameleonLogger {
 			return logger
@@ -85,13 +93,18 @@ func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Conta
 		err = r.RegisterFactory(func(cfg *DbConfig) (*db.MongoConnectionWrapper, error) {
 
 			uri := fmt.Sprintf(
-				"mongodb://%s:%s@%s:%d/%s",
-				url.QueryEscape(cfg.User),
-				url.QueryEscape(cfg.Password),
+				"mongodb://%s:%d/%s",
 				url.QueryEscape(cfg.Host),
 				cfg.Port,
 				url.QueryEscape(cfg.Database))
-			client, err := mongo.NewClient(options.Client().ApplyURI(uri))
+
+			creds := options.Credential{
+				Username: cfg.User,
+				Password: cfg.Password,
+			}
+			opts := options.Client().ApplyURI(uri).SetAuth(creds)
+
+			client, err := mongo.NewClient(opts)
 			if err != nil {
 				return nil, err
 			}

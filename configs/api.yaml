@@ -4,7 +4,7 @@ server:
   key-file:
   database:
     host: localhost
-    port: 5432
+    port: 27017
     user: chameleon
     password: chameleon
     database: chameleon

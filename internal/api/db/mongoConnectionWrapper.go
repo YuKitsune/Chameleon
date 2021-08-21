@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 type MongoConnectionWrapper struct {
@@ -19,6 +20,11 @@ func (w *MongoConnectionWrapper) InConnection(ctx context.Context, fn func (ctx 
 	defer func() {
 		err = w.Client.Disconnect(ctx)
 	}()
+
+	err = w.Client.Ping(ctx, readpref.Primary())
+	if err != nil {
+		return err
+	}
 
 	db := w.Client.Database(w.Database)
 	err = fn(ctx, db)
