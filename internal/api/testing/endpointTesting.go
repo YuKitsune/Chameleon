@@ -7,7 +7,7 @@ import (
 	"github.com/yukitsune/chameleon/pkg/testUtils"
 	"io"
 	"net/http"
-	"strings"
+	"net/url"
 	"testing"
 )
 
@@ -39,7 +39,7 @@ func TestCreate(t *testing.T, endpoint string, makeResource CreateResourceFunc, 
 	}
 }
 
-func TestGet(t *testing.T, endpoint string, makeResource CreateResourceFunc, params map[string]string, assertion AssertFunc) {
+func TestGet(t *testing.T, endpoint string, makeResource CreateResourceFunc, params url.Values, assertion AssertFunc) {
 
 	// Create the model
 	_, originalBytes, err := makeResource(t)
@@ -56,8 +56,8 @@ func TestGet(t *testing.T, endpoint string, makeResource CreateResourceFunc, par
 	}
 
 	// Send the get request
-	queryString := buildQueryString(params)
-	res, err := http.Get(fmt.Sprintf("%s%s", endpoint, queryString))
+	reqUrl := fmt.Sprintf("%s?%s", endpoint, params.Encode())
+	res, err := http.Get(reqUrl)
 	if err != nil {
 		testUtils.FailOnError(t, err, "API should not return an error")
 		return
@@ -193,6 +193,7 @@ func createViaApi(t *testing.T, endpoint string, modelBytes []byte) ([]byte, err
 	if err != nil {
 		return nil, err
 	}
+
 	// Make sure we have the right status code
 	if ok := assertStatusCode(t, http.StatusCreated, res.StatusCode, resBytes); !ok {
 		return nil, fmt.Errorf("assertion failure")
@@ -203,25 +204,4 @@ func createViaApi(t *testing.T, endpoint string, modelBytes []byte) ([]byte, err
 
 func assertStatusCode(t *testing.T, expected int, actual int, resBytes []byte) bool {
 	return assert.Equal(t, expected, actual, "API should return %d but found %d. Response body: %s", expected, actual, string(resBytes))
-}
-
-func buildQueryString(params map[string]string) string {
-
-	qsBuilder := strings.Builder{}
-	i := 0
-	for key, value := range params {
-		var prefix string
-		if i != 0 {
-			prefix = "&"
-		}
-		qsBuilder.WriteString(fmt.Sprintf("%s%s=%s", prefix, key, value))
-		i++
-	}
-
-	var queryString string
-	if qsBuilder.Len() > 0 {
-		queryString = fmt.Sprintf("?%s", qsBuilder.String())
-	}
-
-	return queryString
 }

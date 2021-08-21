@@ -27,7 +27,7 @@ func (handler *ReadAliasHandler) Handle(req *model.GetAliasRequest) (*model.Alia
 	err := handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {
 		collection := db.Collection("alias")
 		cur, err := collection.Find(handler.ctx, bson.M{
-			"Username": req.Recipient,
+			"username": req.Recipient,
 		})
 		if err != nil {
 			return err

@@ -1,13 +1,14 @@
 package model
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"regexp"
 )
 
 type Alias struct {
-	Id string `bson:"_id"`
-	Username               string
-	SenderWhitelistPattern string
+	Id primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Username               string `bson:"username" json:"username"`
+	SenderWhitelistPattern string `bson:"senderWhitelistPattern" json:"senderWhitelistPattern"`
 }
 
 func (a *Alias) SenderIsAllowed(sender string) (*bool, error) {

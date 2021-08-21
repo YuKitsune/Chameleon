@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/yukitsune/chameleon/internal/api/model"
 	apitesting "github.com/yukitsune/chameleon/internal/api/testing"
+	"net/url"
 	"testing"
 )
 
@@ -14,6 +15,7 @@ var apiUrl = "http://localhost:8000/alias"
 
 // Todo: Should come through and make these a bit more generic. E.g. have a test method for each request type (POST,
 // 	GET, PUT, DELETE) then sub in a URL, object, assertion callback, etc.
+// Todo: Test cleanup
 
 func TestCreateAlias(t *testing.T) {
 	apitesting.TestCreate(t, apiUrl, makeAlias, func(t *testing.T, expectedBytes []byte, actualBytes []byte) error {
@@ -38,10 +40,9 @@ func TestCreateAlias(t *testing.T) {
 
 func TestGetAlias(t *testing.T) {
 
-	params := map[string]string{
-		"sender": fmt.Sprintf("test@%s.app", t.Name()),
-		"recipient": "YuKitsune",
-	}
+	params := url.Values{}
+	params.Set("sender", fmt.Sprintf("test@%s.app", t.Name()))
+	params.Set("recipient", "YuKitsune")
 
 	apitesting.TestGet(t, apiUrl, makeAlias, params, func(t *testing.T, expectedBytes []byte, actualBytes []byte) error {
 		var expectedAlias model.Alias
