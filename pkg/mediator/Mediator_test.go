@@ -13,8 +13,8 @@ import (
 func TestMediator_Publish(t *testing.T) {
 
 	t.Run("No Event Handlers", func(t *testing.T) {
-		c := camogo.New()
-		m := New(c)
+		c := camogo.NewBuilder().Build()
+		m := NewBuilder().WithResolver(c).Build()
 
 		r := mocks.MockEvent{
 			Value: t.Name(),
@@ -30,7 +30,7 @@ func TestMediator_Publish(t *testing.T) {
 	t.Run("Single Event Handler Instance", func(t *testing.T) {
 		testMediatorPublish(
 			nil,
-			func(m *Mediator, _ camogo.Container) (*[]mocks.EventRecipient, error) {
+			func(m Mediator, _ camogo.Container) (*[]mocks.EventRecipient, error) {
 				h := &mocks.MockEventHandler{}
 				m.AddEventHandlerInstance(h)
 				return &[]mocks.EventRecipient{h}, nil
@@ -41,7 +41,7 @@ func TestMediator_Publish(t *testing.T) {
 	t.Run("Multiple Event Handler Instances", func(t *testing.T) {
 		testMediatorPublish(
 			nil,
-			func(m *Mediator, _ camogo.Container) (*[]mocks.EventRecipient, error) {
+			func(m Mediator, _ camogo.Container) (*[]mocks.EventRecipient, error) {
 				h1 := &mocks.MockEventHandler{}
 				m.AddEventHandlerInstance(h1)
 
@@ -75,7 +75,7 @@ func TestMediator_Publish(t *testing.T) {
 
 		testMediatorPublish(
 			&setupContainer,
-			func(m *Mediator, c camogo.Container) (*[]mocks.EventRecipient, error) {
+			func(m Mediator, c camogo.Container) (*[]mocks.EventRecipient, error) {
 				m.AddEventHandlerFactory(mocks.NewMockHandlerWithService)
 				return nil, nil
 			},
@@ -118,7 +118,7 @@ func TestMediator_Publish(t *testing.T) {
 
 		testMediatorPublish(
 			&setupContainer,
-			func(m *Mediator, c camogo.Container) (*[]mocks.EventRecipient, error) {
+			func(m Mediator, c camogo.Container) (*[]mocks.EventRecipient, error) {
 				m.AddEventHandlerFactory(mocks.NewMockHandlerWithService)
 				m.AddEventHandlerFactory(mocks.NewMockHandlerWithService2ElectricBoogaloo)
 				return nil, nil
@@ -129,7 +129,7 @@ func TestMediator_Publish(t *testing.T) {
 
 func testMediatorPublish(
 	setupContainer *func(camogo.Container) (*[]mocks.EventRecipient, error),
-	setupMediator func(*Mediator, camogo.Container) (*[]mocks.EventRecipient, error),
+	setupMediator func(Mediator, camogo.Container) (*[]mocks.EventRecipient, error),
 	t *testing.T) {
 	var err error
 
@@ -221,7 +221,7 @@ func TestMediator_Send(t *testing.T) {
 	t.Run("Request Handler Instance", func(t *testing.T) {
 		testMediatorSend(
 			nil,
-			func(m *Mediator) error {
+			func(m Mediator) error {
 				m.AddRequestHandlerInstance(&mocks.MockRequestHandler{})
 				return nil
 			},
@@ -238,7 +238,7 @@ func TestMediator_Send(t *testing.T) {
 
 		testMediatorSend(
 			&setupContainer,
-			func(m *Mediator) error {
+			func(m Mediator) error {
 				m.AddRequestHandlerFactory(mocks.NewMockRequestHandlerWithService)
 				return nil
 			},
@@ -248,7 +248,7 @@ func TestMediator_Send(t *testing.T) {
 
 func testMediatorSend(
 	setupContainer *func(camogo.Container) error,
-	setupMediator func(*Mediator) error,
+	setupMediator func(Mediator) error,
 	t *testing.T) {
 	var err error
 
@@ -299,7 +299,7 @@ func testMediatorSend(
 func TestMediator_Publish_ReturnsUsefulError(t *testing.T) {
 
 	t.Run("Single Event Handler Instance", func(t *testing.T) {
-		testMediatorPublishReturnsUsefulError(func(m *Mediator) (*[]interface{}, *[]interface{}) {
+		testMediatorPublishReturnsUsefulError(func(m Mediator) (*[]interface{}, *[]interface{}) {
 			instance := &mocks.MockEventHandlerThatAlwaysFails{}
 			m.AddEventHandlerInstance(instance)
 			return &[]interface{}{instance}, nil
@@ -308,7 +308,7 @@ func TestMediator_Publish_ReturnsUsefulError(t *testing.T) {
 	})
 
 	t.Run("Multiple Event Handler Instances", func(t *testing.T) {
-		testMediatorPublishReturnsUsefulError(func(m *Mediator) (*[]interface{}, *[]interface{}) {
+		testMediatorPublishReturnsUsefulError(func(m Mediator) (*[]interface{}, *[]interface{}) {
 			instances := &[]interface{}{
 				&mocks.MockEventHandlerThatAlwaysFails{},
 				&mocks.MockEventHandlerThatAlwaysFails2ElectricBoogaloo{},
@@ -324,7 +324,7 @@ func TestMediator_Publish_ReturnsUsefulError(t *testing.T) {
 	})
 
 	t.Run("Single Event Handler Factory", func(t *testing.T) {
-		testMediatorPublishReturnsUsefulError(func(m *Mediator) (*[]interface{}, *[]interface{}) {
+		testMediatorPublishReturnsUsefulError(func(m Mediator) (*[]interface{}, *[]interface{}) {
 			factory := func() *mocks.MockEventHandlerThatAlwaysFails { return &mocks.MockEventHandlerThatAlwaysFails{} }
 			m.AddEventHandlerFactory(factory)
 			return nil, &[]interface{}{factory}
@@ -333,7 +333,7 @@ func TestMediator_Publish_ReturnsUsefulError(t *testing.T) {
 	})
 
 	t.Run("Multiple Event Handler Factories", func(t *testing.T) {
-		testMediatorPublishReturnsUsefulError(func(m *Mediator) (*[]interface{}, *[]interface{}) {
+		testMediatorPublishReturnsUsefulError(func(m Mediator) (*[]interface{}, *[]interface{}) {
 			factories := &[]interface{}{
 				func() *mocks.MockEventHandlerThatAlwaysFails { return &mocks.MockEventHandlerThatAlwaysFails{} },
 				func() *mocks.MockEventHandlerThatAlwaysFails2ElectricBoogaloo {
@@ -351,7 +351,7 @@ func TestMediator_Publish_ReturnsUsefulError(t *testing.T) {
 	})
 }
 
-func testMediatorPublishReturnsUsefulError(setupMediator func(*Mediator) (*[]interface{}, *[]interface{}), t *testing.T) {
+func testMediatorPublishReturnsUsefulError(setupMediator func(Mediator) (*[]interface{}, *[]interface{}), t *testing.T) {
 	c := camogo.New()
 	m := New(c)
 
@@ -367,7 +367,7 @@ func testMediatorPublishReturnsUsefulError(setupMediator func(*Mediator) (*[]int
 func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 
 	t.Run("Request Handler Instance", func(t *testing.T) {
-		testMediatorSendReturnsUsefulError(func(m *Mediator) (*[]interface{}, *[]interface{}) {
+		testMediatorSendReturnsUsefulError(func(m Mediator) (*[]interface{}, *[]interface{}) {
 			instance := &mocks.MockRequestHandlerThatAlwaysFails{}
 			m.AddRequestHandlerInstance(instance)
 			return &[]interface{}{instance}, nil
@@ -376,7 +376,7 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 	})
 
 	t.Run("Request Handler Factory", func(t *testing.T) {
-		testMediatorSendReturnsUsefulError(func(m *Mediator) (*[]interface{}, *[]interface{}) {
+		testMediatorSendReturnsUsefulError(func(m Mediator) (*[]interface{}, *[]interface{}) {
 			factory := func() *mocks.MockRequestHandlerThatAlwaysFails { return &mocks.MockRequestHandlerThatAlwaysFails{} }
 			m.AddRequestHandlerFactory(factory)
 			return nil, &[]interface{}{factory}
@@ -385,7 +385,7 @@ func TestMediator_Send_ReturnsUsefulError(t *testing.T) {
 	})
 }
 
-func testMediatorSendReturnsUsefulError(setupMediator func(*Mediator) (*[]interface{}, *[]interface{}), t *testing.T) {
+func testMediatorSendReturnsUsefulError(setupMediator func(Mediator) (*[]interface{}, *[]interface{}), t *testing.T) {
 	c := camogo.New()
 	m := New(c)
 

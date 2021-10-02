@@ -4,19 +4,20 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api"
+	config2 "github.com/yukitsune/chameleon/internal/api/config"
 	"github.com/yukitsune/chameleon/internal/config"
 	"github.com/yukitsune/chameleon/internal/grace"
 	"github.com/yukitsune/chameleon/internal/log"
 )
 
 type ChameleonApiConfig struct {
-	Api     *api.Config `mapstructure:"server"`
-	Logging *log.Config `mapstructure:"log"`
+	Api     *config2.Config `mapstructure:"server"`
+	Logging *log.Config     `mapstructure:"log"`
 }
 
 func (c *ChameleonApiConfig) SetDefaults() error {
 	if c.Api == nil {
-		c.Api = &api.Config{}
+		c.Api = &config2.Config{}
 	}
 	err := c.Api.SetDefaults()
 	if err != nil {
@@ -71,7 +72,7 @@ func serve(command *cobra.Command, args []string) error {
 	}
 
 	// Setup the IoC container
-	container, err := setupContainer(apiConfig)
+	container, err := buildContainer(apiConfig)
 	if err != nil {
 		return err
 	}
@@ -92,40 +93,35 @@ func serve(command *cobra.Command, args []string) error {
 	})
 }
 
-func setupContainer(cfg *ChameleonApiConfig) (camogo.Container, error) {
-	c := camogo.New()
-	err := c.Register(func(r *camogo.Registrar) error {
+func buildContainer(cfg *ChameleonApiConfig) (camogo.Container, error) {
+	cb := camogo.NewBuilder()
 
-		// Todo: Move to module
+	var err error
+	// Todo: Move to module
 
-		// Configuration
-		err := r.RegisterInstance(cfg.Api)
-		if err != nil {
-			return err
-		}
-
-		err = r.RegisterInstance(cfg.Logging)
-		if err != nil {
-			return err
-		}
-
-		// Services
-		err = r.RegisterFactory(log.New, camogo.SingletonLifetime)
-		if err != nil {
-			return err
-		}
-
-		err = r.RegisterFactory(api.NewChameleonApiServer, camogo.SingletonLifetime)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
+	// Configuration
+	err = cb.RegisterInstance(cfg.Api)
 	if err != nil {
 		return nil, err
 	}
 
+	err = cb.RegisterInstance(cfg.Logging)
+	if err != nil {
+		return nil, err
+	}
+
+	// Services
+	err = cb.RegisterFactory(log.New, camogo.SingletonLifetime)
+	if err != nil {
+		return nil, err
+	}
+
+	// Server
+	err = cb.RegisterFactory(api.NewChameleonApiServer, camogo.SingletonLifetime)
+	if err != nil {
+		return nil, err
+	}
+
+	c := cb.Build()
 	return c, nil
 }

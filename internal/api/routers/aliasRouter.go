@@ -52,7 +52,7 @@ func (router *AliasRouter) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveWithResult(func(mediator *mediator.Mediator) (interface{}, error) {
+	res, err := router.container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
 		return mediator.Send(&createRequest)
 	})
 
@@ -88,7 +88,7 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveWithResult(func(mediator *mediator.Mediator) (interface{}, error) {
+	res, err := router.container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
 		return mediator.Send(req)
 	})
 
@@ -112,7 +112,7 @@ func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveWithResult(func(mediator *mediator.Mediator) (interface{}, error) {
+	res, err := router.container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
 		return mediator.Send(&updateRequest)
 	})
 
@@ -136,7 +136,7 @@ func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the request through the mediator
-	_, err = router.container.ResolveWithResult(func(mediator *mediator.Mediator) (interface{}, error) {
+	_, err = router.container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
 		return mediator.Send(&deleteRequest)
 	})
 

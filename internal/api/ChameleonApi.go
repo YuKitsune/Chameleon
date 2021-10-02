@@ -2,36 +2,31 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/yukitsune/camogo"
-	"github.com/yukitsune/chameleon/internal/api/db"
-	"github.com/yukitsune/chameleon/internal/api/handlers/alias"
+	"github.com/yukitsune/chameleon/internal/api/config"
 	"github.com/yukitsune/chameleon/internal/api/middleware"
+	"github.com/yukitsune/chameleon/internal/api/modules"
 	"github.com/yukitsune/chameleon/internal/api/routers"
 	"github.com/yukitsune/chameleon/internal/log"
-	"github.com/yukitsune/chameleon/pkg/mediator"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
-	"net/url"
 	"time"
 )
 
 type ChameleonApiServer struct {
-	config    *Config
+	config    *config.Config
 	svr       *http.Server
 	container camogo.Container
 	log       log.ChameleonLogger
 }
 
-func NewChameleonApiServer(config *Config, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
+func NewChameleonApiServer(config *config.Config, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
 	api := &ChameleonApiServer{
 		config: config,
 		log:    logger,
 	}
 
-	c, err := makeContainer(config.Database, logger)
+	c, err := buildContainer(config.Database, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -60,85 +55,52 @@ func (api *ChameleonApiServer) StartTLS() error {
 	return api.svr.ListenAndServeTLS(api.config.CertFile, api.config.KeyFile)
 }
 
-func makeContainer(dbConfig *DbConfig, logger log.ChameleonLogger) (camogo.Container, error) {
-	c := camogo.New()
+func buildContainer(dbConfig *config.DbConfig, logger log.ChameleonLogger) (camogo.Container, error) {
+	cb := camogo.NewBuilder()
 
-	err := c.Register(func(r *camogo.Registrar) error {
-		var err error
+	var err error
 
-		err = r.RegisterFactory(func () context.Context {
-			return context.TODO()
-		},
+	// Context
+	// Todo: Gonna need a different way of providing context
+	err = cb.RegisterFactory(func () context.Context {
+		return context.TODO()
+	},
 		camogo.TransientLifetime)
-		if err != nil {
-			return err
-		}
-
-		// Logger
-		err = r.RegisterFactory(func () log.ChameleonLogger {
-			return logger
-		},
-		camogo.TransientLifetime)
-		if err != nil {
-			return err
-		}
-
-		// Database config
-		err = r.RegisterInstance(dbConfig)
-		if err != nil {
-			return err
-		}
-
-		// Database
-		err = r.RegisterFactory(func(cfg *DbConfig) (*db.MongoConnectionWrapper, error) {
-
-			uri := fmt.Sprintf(
-				"mongodb://%s:%d/%s",
-				url.QueryEscape(cfg.Host),
-				cfg.Port,
-				url.QueryEscape(cfg.Database))
-
-			creds := options.Credential{
-				Username: cfg.User,
-				Password: cfg.Password,
-			}
-			opts := options.Client().ApplyURI(uri).SetAuth(creds)
-
-			client, err := mongo.NewClient(opts)
-			if err != nil {
-				return nil, err
-			}
-
-			wrapper := &db.MongoConnectionWrapper{Client: client, Database: cfg.Database}
-			return wrapper, nil
-		},
-		camogo.TransientLifetime)
-		if err != nil {
-			return err
-		}
-
-		// The container itself
-		err = r.RegisterFactory(func() camogo.Container {
-			return c
-		},
-		camogo.TransientLifetime)
-		if err != nil {
-			return err
-		}
-
-		// Mediator
-		err = r.RegisterFactory(makeMediator, camogo.SingletonLifetime)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
 	if err != nil {
 		return nil, err
 	}
 
+	// Logger
+	err = cb.RegisterFactory(func () log.ChameleonLogger {
+		return logger
+	},
+		camogo.TransientLifetime)
+	if err != nil {
+		return nil, err
+	}
+
+	// Database
+	err = cb.RegisterModule(&modules.DatabaseModule{Config: dbConfig})
+	if err != nil {
+		return nil, err
+	}
+
+	// Mediator
+	err = cb.RegisterModule(&modules.MediatorHandlerModule{})
+	if err != nil {
+		return nil, err
+	}
+
+	// The container itself
+	//err = r.RegisterFactory(func() camogo.Container {
+	//	return c
+	//},
+	//	camogo.TransientLifetime)
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	c := cb.Build()
 	return c, nil
 }
 
@@ -154,33 +116,6 @@ func makeHandler(container camogo.Container) http.Handler {
 	routers.NewAliasRouter(m.PathPrefix("/alias").Subrouter(), container)
 
 	return m
-}
-
-func makeMediator(container camogo.Container) (*mediator.Mediator, error) {
-	m := mediator.New(container)
-	var err error
-
-	err = m.AddRequestHandlerFactory(alias.NewCreateAliasHandler)
-	if err != nil {
-		return nil, err
-	}
-
-	err = m.AddRequestHandlerFactory(alias.NewReadAliasHandler)
-	if err != nil {
-		return nil, err
-	}
-
-	err = m.AddRequestHandlerFactory(alias.NewUpdateAliasHandler)
-	if err != nil {
-		return nil, err
-	}
-
-	err = m.AddRequestHandlerFactory(alias.NewDeleteAliasHandler)
-	if err != nil {
-		return nil, err
-	}
-
-	return m, nil
 }
 
 func (api *ChameleonApiServer) Shutdown() error {

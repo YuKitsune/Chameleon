@@ -44,7 +44,7 @@ build: ## Builds all programs and places their binaries in the bin/ directory
 
 .PHONY: test
 test: compose-fresh-detach ## Runs all tests
-	go test -v ./...
+	go test ./...
 
 .PHONY: clean
 clean: ## Removes the bin/ directory
