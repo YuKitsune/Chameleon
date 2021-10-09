@@ -44,5 +44,6 @@ func WriteError(w http.ResponseWriter, err error) {
 
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(err.Error()))
 	}
 }
