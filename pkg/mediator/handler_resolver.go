@@ -1,6 +1,8 @@
 package mediator
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type HandlerPredicate = func (p reflect.Type) bool
 
@@ -10,31 +12,32 @@ type HandlerResolver interface {
 	ResolveMatchingTypes(HandlerPredicate) ([]interface{}, error)
 }
 
-func FindHandlerForRequest(reqType reflect.Type/*, resType reflect.Type*/) HandlerPredicate {
+func FindHandlerForRequest(reqType reflect.Type) HandlerPredicate {
 	return func (t reflect.Type) bool {
 
 		// If t has a "Handle" method that:
 		// - Accepts reqType as it's only argument
-		// - Returns only resType, or resType and error
+		// - Returns a response and an error
 
 		m, found := t.MethodByName(InternalHandlerFuncName)
 		if !found {
 			return false
 		}
 
+		// [0]: Receiver
+		// [1]: Request Type
 		numIn := m.Type.NumIn()
-		if numIn != 1 {
+		if numIn != 2 {
 			return false
 		}
 
-		foundReqType := m.Type.In(0)
-		// foundResType := m.Type.Out(0)
+		foundReqType := m.Type.In(1)
 		returnsError := m.Type.Out(1).Name() == "error"
 		if !returnsError {
 			return false
 		}
 
-		return foundReqType == reqType// && foundResType == resType
+		return foundReqType == reqType
 	}
 }
 
@@ -42,19 +45,21 @@ func FindHandlerForEvent(evtType reflect.Type) HandlerPredicate {
 	return func (t reflect.Type) bool {
 		// If t has a "Handle" method that:
 		// - Accepts evtType as it's only argument
-		// - Returns nothing
+		// - Returns an error
 
 		m, found := t.MethodByName(InternalHandlerFuncName)
 		if !found {
 			return false
 		}
 
+		// [0]: Receiver
+		// [1]: Request Type
 		numIn := m.Type.NumIn()
-		if numIn != 1 {
+		if numIn != 2 {
 			return false
 		}
 
-		foundEvtType := m.Type.In(0)
+		foundEvtType := m.Type.In(1)
 		returnsError := m.Type.Out(0).Name() == "error"
 		if !returnsError {
 			return false
