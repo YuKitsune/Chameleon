@@ -91,15 +91,6 @@ func buildContainer(dbConfig *config.DbConfig, logger log.ChameleonLogger) (camo
 		return nil, err
 	}
 
-	// The container itself
-	//err = r.RegisterFactory(func() camogo.Container {
-	//	return c
-	//},
-	//	camogo.TransientLifetime)
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	c := cb.Build()
 	return c, nil
 }

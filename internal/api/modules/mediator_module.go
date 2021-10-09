@@ -11,7 +11,7 @@ type MediatorHandlerModule struct {
 
 func (m *MediatorHandlerModule) Register(builder camogo.ContainerBuilder) (err error) {
 
-	err = builder.RegisterFactory(func (container camogo.Container) mediator.Mediator{
+	err = builder.RegisterFactory(func (container camogo.Container) mediator.Mediator {
 		return mediator.NewBuilder().WithResolver(container).Build()
 	}, camogo.TransientLifetime)
 	if err != nil {
