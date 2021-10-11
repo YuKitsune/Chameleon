@@ -25,7 +25,7 @@ type CreateAliasRequest struct {
 	Alias
 }
 
-type GetAliasRequest struct {
+type FindAliasRequest struct {
 	Sender    string
 	Recipient string
 }
@@ -36,10 +36,4 @@ type UpdateAliasRequest struct {
 
 type DeleteAliasRequest struct {
 	Alias
-}
-
-// Todo: Temporary until I can be bothered to allow camogo to return primitives
-
-type DeleteAliasResponse struct {
-	Deleted bool
 }

@@ -31,7 +31,7 @@ func NewChameleonApiServer(config *config.Config, logger log.ChameleonLogger) (*
 		return nil, err
 	}
 
-	h := makeHandler(c)
+	h := buildHandler(c)
 	api.svr = &http.Server{
 		Addr: api.config.GetAddress(),
 		// Good practice to set timeouts to avoid Slowloris attacks.
@@ -95,18 +95,30 @@ func buildContainer(dbConfig *config.DbConfig, logger log.ChameleonLogger) (camo
 	return c, nil
 }
 
-func makeHandler(container camogo.Container) http.Handler {
-	m := mux.NewRouter()
+func buildHandler(container camogo.Container) http.Handler {
+	r := mux.NewRouter()
 
-	// Middleware
-	// Panic recovery
-	panicRecoveryMiddleware := middleware.NewPanicRecovery(container)
-	m.Use(panicRecoveryMiddleware.Middleware)
+	configureMiddleware(r, container)
+	configureEndpoints(r)
 
-	// Endpoints
-	routers.NewAliasRouter(m.PathPrefix("/alias").Subrouter(), container)
+	return r
+}
 
-	return m
+func configureMiddleware(r *mux.Router, container camogo.Container) {
+
+	// Container injection
+	containerInjectionMiddleware := middleware.NewContainerInjectionMiddleware(container)
+	r.Use(containerInjectionMiddleware.Middleware)
+
+	r.Use(middleware.PanicRecovery)
+}
+
+func configureEndpoints(r *mux.Router) {
+	mountRouter(r, "/alias", routers.AliasRouter)
+}
+
+func mountRouter(r *mux.Router, path string, handler func (*mux.Router)) {
+	handler(r.PathPrefix(path).Subrouter())
 }
 
 func (api *ChameleonApiServer) Shutdown() error {

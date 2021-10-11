@@ -11,17 +11,17 @@ import (
 	"regexp"
 )
 
-type ReadAliasHandler struct {
+type FindAliasHandler struct {
 	ctx context.Context
 	db *db.MongoConnectionWrapper
 	log log.ChameleonLogger
 }
 
-func NewReadAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *ReadAliasHandler {
-	return &ReadAliasHandler{ctx, db, log}
+func NewFindAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *FindAliasHandler {
+	return &FindAliasHandler{ctx, db, log}
 }
 
-func (handler *ReadAliasHandler) Handle(req *model.GetAliasRequest) (*model.Alias, error) {
+func (handler *FindAliasHandler) Handle(req *model.FindAliasRequest) (*model.Alias, error) {
 
 	var allAliasesForRecipient []model.Alias
 	err := handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {

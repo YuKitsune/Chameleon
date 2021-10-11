@@ -2,57 +2,41 @@ package routers
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/yukitsune/camogo"
+	"github.com/yukitsune/chameleon/internal/api/context"
 	"github.com/yukitsune/chameleon/internal/api/model"
 	"github.com/yukitsune/chameleon/internal/api/responseWriterHelpers"
 	"github.com/yukitsune/chameleon/pkg/mediator"
 	"net/http"
 )
 
-type AliasRouter struct {
-	r            *mux.Router
-	container    camogo.Container
-	hasBeenSetUp bool
-}
-
-func NewAliasRouter(r *mux.Router, c camogo.Container) *AliasRouter {
-	router := &AliasRouter{
-		r:         r,
-		container: c,
-	}
-
-	router.setup()
-	return router
-}
-
-func (router *AliasRouter) setup() {
-	if router.hasBeenSetUp {
-		return
-	}
-
-	router.r.HandleFunc("", router.Create).Methods("POST")
-	router.r.HandleFunc("", router.Read).Methods("GET").
+func AliasRouter(r *mux.Router) {
+	r.HandleFunc("", Create).Methods("POST")
+	r.HandleFunc("", Find).Methods("GET").
 		Queries(
 			"sender", "{sender}",
 			"recipient", "{recipient}")
-	router.r.HandleFunc("", router.Update).Methods("PUT")
-	router.r.HandleFunc("", router.Delete).Methods("DELETE")
-
-	router.hasBeenSetUp = true
+	r.HandleFunc("", Update).Methods("PUT")
+	r.HandleFunc("", Delete).Methods("DELETE")
 }
 
-func (router *AliasRouter) Create(w http.ResponseWriter, r *http.Request) {
+func Create(w http.ResponseWriter, r *http.Request) {
+
+	container, err := context.GetContainer(r.Context())
+	if err != nil {
+		responseWriterHelpers.WriteError(w, err)
+		return
+	}
 
 	// Parse the request JSON
 	var createRequest model.CreateAliasRequest
-	err := getRequest(r, &createRequest)
+	err = getRequest(r, &createRequest)
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
+	res, err := container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
 		return mediator.Send(&createRequest)
 	})
 
@@ -65,7 +49,13 @@ func (router *AliasRouter) Create(w http.ResponseWriter, r *http.Request) {
 	responseWriterHelpers.WriteResponse(w, res, http.StatusCreated)
 }
 
-func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
+func Find(w http.ResponseWriter, r *http.Request) {
+
+	container, err := context.GetContainer(r.Context())
+	if err != nil {
+		responseWriterHelpers.WriteError(w, err)
+		return
+	}
 
 	// Get the parameters from the URL
 	vars := mux.Vars(r)
@@ -82,13 +72,13 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Build the request
-	req := &model.GetAliasRequest{
+	req := &model.FindAliasRequest{
 		Sender:    sender,
 		Recipient: recipient,
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
+	res, err := container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
 		return mediator.Send(req)
 	})
 
@@ -101,18 +91,24 @@ func (router *AliasRouter) Read(w http.ResponseWriter, r *http.Request) {
 	responseWriterHelpers.WriteResponse(w, res, http.StatusOK)
 }
 
-func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
+func Update(w http.ResponseWriter, r *http.Request) {
+
+	container, err := context.GetContainer(r.Context())
+	if err != nil {
+		responseWriterHelpers.WriteError(w, err)
+		return
+	}
 
 	// Parse the request JSON
 	var updateRequest model.UpdateAliasRequest
-	err := getRequest(r, &updateRequest)
+	err = getRequest(r, &updateRequest)
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Send the request through the mediator
-	res, err := router.container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
+	res, err := container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
 		return mediator.Send(&updateRequest)
 	})
 
@@ -125,18 +121,24 @@ func (router *AliasRouter) Update(w http.ResponseWriter, r *http.Request) {
 	responseWriterHelpers.WriteResponse(w, res, http.StatusOK)
 }
 
-func (router *AliasRouter) Delete(w http.ResponseWriter, r *http.Request) {
+func Delete(w http.ResponseWriter, r *http.Request) {
+
+	container, err := context.GetContainer(r.Context())
+	if err != nil {
+		responseWriterHelpers.WriteError(w, err)
+		return
+	}
 
 	// Parse the request JSON
 	var deleteRequest model.DeleteAliasRequest
-	err := getRequest(r, &deleteRequest)
+	err = getRequest(r, &deleteRequest)
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
 	}
 
 	// Send the request through the mediator
-	_, err = router.container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
+	_, err = container.ResolveWithResult(func(mediator mediator.Mediator) (interface{}, error) {
 		return mediator.Send(&deleteRequest)
 	})
 

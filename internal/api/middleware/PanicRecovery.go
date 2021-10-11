@@ -1,22 +1,14 @@
 package middleware
 
 import (
-	"github.com/yukitsune/camogo"
+	"github.com/yukitsune/chameleon/internal/api/context"
 	"github.com/yukitsune/chameleon/internal/api/responseWriterHelpers"
 	"github.com/yukitsune/chameleon/internal/log"
 	"net/http"
 	"runtime"
 )
 
-type PanicRecovery struct {
-	container camogo.Container
-}
-
-func NewPanicRecovery(container camogo.Container) *PanicRecovery {
-	return &PanicRecovery{container: container}
-}
-
-func (m *PanicRecovery) Middleware(next http.Handler) http.Handler {
+func PanicRecovery(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -24,9 +16,13 @@ func (m *PanicRecovery) Middleware(next http.Handler) http.Handler {
 				n := runtime.Stack(buf, false)
 				buf = buf[:n]
 
-				_ = m.container.Resolve(func(logger log.ChameleonLogger) {
-					logger.Errorf("Recovering from panic: %v\n%s\n", err, buf)
-				})
+				// Todo: It'd be nice to not have to fetch the container here
+				container, _ := context.Container(r.Context())
+				if container != nil {
+					_ = container.Resolve(func(logger log.ChameleonLogger) {
+						logger.Errorf("Recovering from panic: %v\n%s\n", err, buf)
+					})
+				}
 
 				responseWriterHelpers.WriteEmptyResponse(w, http.StatusInternalServerError)
 			}

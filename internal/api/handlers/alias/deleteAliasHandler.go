@@ -19,7 +19,7 @@ func NewDeleteAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, l
 	return &DeleteAliasHandler{ctx, db, log}
 }
 
-func (handler *DeleteAliasHandler) Handle(req *model.DeleteAliasRequest) (*model.DeleteAliasResponse, error) {
+func (handler *DeleteAliasHandler) Handle(req *model.DeleteAliasRequest) (bool, error) {
 	deleted := false
 	err := handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {
 		collection := db.Collection("alias")
@@ -32,8 +32,8 @@ func (handler *DeleteAliasHandler) Handle(req *model.DeleteAliasRequest) (*model
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	return &model.DeleteAliasResponse{Deleted: deleted}, nil
+	return deleted, nil
 }
