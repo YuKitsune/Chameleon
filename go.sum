@@ -256,6 +256,8 @@ github.com/yukitsune/camogo v1.0.5-0.20210927105255-9120515b3bc7 h1:tv9pd6qUFALK
 github.com/yukitsune/camogo v1.0.5-0.20210927105255-9120515b3bc7/go.mod h1:HaJ7z8XXonVZeYtUEyBzNQWYTtUllWo9tFDKXf1veKw=
 github.com/yukitsune/camogo v1.0.5-0.20211009040515-70fd3fe93089 h1:G8RjwmH14uGlicZ2h1S0gD2MjHGIVY84DtTZ8dQ1VvI=
 github.com/yukitsune/camogo v1.0.5-0.20211009040515-70fd3fe93089/go.mod h1:HaJ7z8XXonVZeYtUEyBzNQWYTtUllWo9tFDKXf1veKw=
+github.com/yukitsune/camogo v1.0.5-0.20211012091618-99e50d9c9178 h1:GbvLkCn8Qut6Ti52YyH7nUkVFgfv7YMWN72ZmJuQI0Y=
+github.com/yukitsune/camogo v1.0.5-0.20211012091618-99e50d9c9178/go.mod h1:HaJ7z8XXonVZeYtUEyBzNQWYTtUllWo9tFDKXf1veKw=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.mongodb.org/mongo-driver v1.7.1 h1:jwqTeEM3x6L9xDXrCxN0Hbg7vdGfPBOTIkr0+/LYZDA=
 go.mongodb.org/mongo-driver v1.7.1/go.mod h1:Q4oFMbo1+MSNqICAdYMlC/zSTrwCogR4R8NzkI+yfU8=

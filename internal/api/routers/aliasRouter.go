@@ -21,7 +21,7 @@ func AliasRouter(r *mux.Router) {
 
 func Create(w http.ResponseWriter, r *http.Request) {
 
-	container, err := context.GetContainer(r.Context())
+	container, err := context.Container(r.Context())
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
@@ -51,7 +51,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 func Find(w http.ResponseWriter, r *http.Request) {
 
-	container, err := context.GetContainer(r.Context())
+	container, err := context.Container(r.Context())
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
@@ -93,7 +93,7 @@ func Find(w http.ResponseWriter, r *http.Request) {
 
 func Update(w http.ResponseWriter, r *http.Request) {
 
-	container, err := context.GetContainer(r.Context())
+	container, err := context.Container(r.Context())
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return
@@ -123,7 +123,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 func Delete(w http.ResponseWriter, r *http.Request) {
 
-	container, err := context.GetContainer(r.Context())
+	container, err := context.Container(r.Context())
 	if err != nil {
 		responseWriterHelpers.WriteError(w, err)
 		return

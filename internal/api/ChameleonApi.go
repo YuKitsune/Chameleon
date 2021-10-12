@@ -60,16 +60,6 @@ func buildContainer(dbConfig *config.DbConfig, logger log.ChameleonLogger) (camo
 
 	var err error
 
-	// Context
-	// Todo: Gonna need a different way of providing context
-	err = cb.RegisterFactory(func () context.Context {
-		return context.TODO()
-	},
-		camogo.TransientLifetime)
-	if err != nil {
-		return nil, err
-	}
-
 	// Logger
 	err = cb.RegisterFactory(func () log.ChameleonLogger {
 		return logger
@@ -86,10 +76,10 @@ func buildContainer(dbConfig *config.DbConfig, logger log.ChameleonLogger) (camo
 	}
 
 	// Mediator
-	err = cb.RegisterModule(&modules.MediatorHandlerModule{})
-	if err != nil {
-		return nil, err
-	}
+	//err = cb.RegisterModule(&modules.MediatorHandlerModule{})
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	c := cb.Build()
 	return c, nil
