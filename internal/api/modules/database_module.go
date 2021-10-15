@@ -5,6 +5,7 @@ import (
 	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api/config"
 	"github.com/yukitsune/chameleon/internal/api/db"
+	mongo2 "github.com/yukitsune/chameleon/internal/api/db/mongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/url"
@@ -24,7 +25,7 @@ func (m *DatabaseModule) Register(cb camogo.ContainerBuilder) error {
 	}
 
 	// Database
-	err = cb.RegisterFactory(func(cfg *config.DbConfig) (*db.MongoConnectionWrapper, error) {
+	err = cb.RegisterFactory(func(cfg *config.DbConfig) (db.ConnectionWrapper, error) {
 
 		uri := fmt.Sprintf(
 			"mongodb://%s:%d/%s",
@@ -43,7 +44,7 @@ func (m *DatabaseModule) Register(cb camogo.ContainerBuilder) error {
 			return nil, err
 		}
 
-		wrapper := &db.MongoConnectionWrapper{Client: client, Database: cfg.Database}
+		wrapper := mongo2.NewMongoConnectionWrapper(client, cfg.Database)
 		return wrapper, nil
 	},
 		camogo.TransientLifetime)

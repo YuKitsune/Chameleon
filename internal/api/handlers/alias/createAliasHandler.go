@@ -6,18 +6,17 @@ import (
 	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/handlers/errors"
 	"github.com/yukitsune/chameleon/internal/api/model"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/yukitsune/chameleon/internal/repository"
 	"regexp"
 )
 
 type CreateAliasHandler struct {
 	ctx context.Context
-	db *db.MongoConnectionWrapper
+	db db.ConnectionWrapper
 	log *logrus.Logger
 }
 
-func NewCreateAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper , log *logrus.Logger) *CreateAliasHandler {
+func NewCreateAliasHandler(ctx context.Context, db db.ConnectionWrapper, log *logrus.Logger) *CreateAliasHandler {
 	return &CreateAliasHandler{ctx, db, log}
 }
 
@@ -45,9 +44,9 @@ func (handler *CreateAliasHandler) Handle(req *model.CreateAliasRequest) (*model
 	}
 
 	// Ensure no duplicate entries exist
-	err = handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {
-		collection := db.Collection("alias")
-		dupes, err := collection.CountDocuments(ctx, bson.M{
+	err = handler.db.InConnection(handler.ctx, func (ctx context.Context, ds repository.DataSource) error {
+		collection := ds.Collection("alias")
+		dupes, err := collection.Count(ctx, repository.Filter{
 			"Username": alias.Username,
 			"SenderWhitelistPattern": alias.SenderWhitelistPattern,
 		})
@@ -59,12 +58,7 @@ func (handler *CreateAliasHandler) Handle(req *model.CreateAliasRequest) (*model
 		}
 
 		// All good, create the record
-		_, err = collection.InsertOne(handler.ctx, alias)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return collection.Add(handler.ctx, alias)
 	})
 	if err != nil {
 		return nil, err

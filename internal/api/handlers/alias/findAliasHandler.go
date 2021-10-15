@@ -6,39 +6,28 @@ import (
 	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/handlers/errors"
 	"github.com/yukitsune/chameleon/internal/api/model"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/yukitsune/chameleon/internal/repository"
 	"regexp"
 )
 
 type FindAliasHandler struct {
 	ctx context.Context
-	db *db.MongoConnectionWrapper
+	db db.ConnectionWrapper
 	log *logrus.Logger
 }
 
-func NewFindAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log *logrus.Logger) *FindAliasHandler {
+func NewFindAliasHandler(ctx context.Context, db db.ConnectionWrapper, log *logrus.Logger) *FindAliasHandler {
 	return &FindAliasHandler{ctx, db, log}
 }
 
 func (handler *FindAliasHandler) Handle(req *model.FindAliasRequest) (*model.Alias, error) {
 
 	var allAliasesForRecipient []model.Alias
-	err := handler.db.InConnection(handler.ctx, func (ctx context.Context, db *mongo.Database) error {
-		collection := db.Collection("alias")
-		cur, err := collection.Find(handler.ctx, bson.M{
+	err := handler.db.InConnection(handler.ctx, func (ctx context.Context, ds repository.DataSource) error {
+		collection := ds.Collection("alias")
+		return collection.FindAll(handler.ctx, repository.Filter{
 			"username": req.Recipient,
-		})
-		if err != nil {
-			return err
-		}
-
-		err = cur.All(handler.ctx, &allAliasesForRecipient)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		}, &allAliasesForRecipient)
 	})
 	if err != nil {
 		return nil, err
