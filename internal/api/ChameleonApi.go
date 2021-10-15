@@ -97,6 +97,8 @@ func buildHandler(container camogo.Container) http.Handler {
 func configureMiddleware(r *mux.Router, container camogo.Container) {
 
 	// Container injection
+	r.Use(middleware.RequestTagging)
+
 	containerInjectionMiddleware := middleware.NewContainerInjectionMiddleware(container)
 	r.Use(containerInjectionMiddleware.Middleware)
 
