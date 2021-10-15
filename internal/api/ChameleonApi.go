@@ -75,12 +75,6 @@ func buildContainer(dbConfig *config.DbConfig, logger *logrus.Logger) (camogo.Co
 		return nil, err
 	}
 
-	// Mediator
-	//err = cb.RegisterModule(&modules.MediatorHandlerModule{})
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	c := cb.Build()
 	return c, nil
 }
@@ -96,7 +90,6 @@ func buildHandler(container camogo.Container) http.Handler {
 
 func configureMiddleware(r *mux.Router, container camogo.Container) {
 
-	// Container injection
 	r.Use(middleware.RequestTagging)
 
 	containerInjectionMiddleware := middleware.NewContainerInjectionMiddleware(container)
