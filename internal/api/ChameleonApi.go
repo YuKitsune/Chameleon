@@ -100,6 +100,7 @@ func configureMiddleware(r *mux.Router, container camogo.Container) {
 	containerInjectionMiddleware := middleware.NewContainerInjectionMiddleware(container)
 	r.Use(containerInjectionMiddleware.Middleware)
 
+	r.Use(middleware.RequestLogging)
 	r.Use(middleware.PanicRecovery)
 }
 
