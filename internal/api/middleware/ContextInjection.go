@@ -20,7 +20,6 @@ func NewContainerInjectionMiddleware(container camogo.Container) *ContextInjecti
 func (m *ContextInjection) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-
 		// Behaviour here is kinda weird:
 		// - ctx needs the child container
 		// - child container needs a context
@@ -47,7 +46,7 @@ func (m *ContextInjection) Middleware(next http.Handler) http.Handler {
 		})
 
 		if err != nil {
-			responseWriterHelpers.WriteError(w, err)
+			responseWriterHelpers.Error(w, err)
 			return
 		}
 

@@ -23,7 +23,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	container, err := context.Container(r.Context())
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
@@ -31,7 +31,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	var createRequest model.CreateAliasRequest
 	err = getRequest(r, &createRequest)
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
@@ -41,19 +41,19 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
 	// Write the response
-	responseWriterHelpers.WriteResponse(w, res, http.StatusCreated)
+	responseWriterHelpers.Response(w, res, http.StatusCreated)
 }
 
 func Find(w http.ResponseWriter, r *http.Request) {
 
 	container, err := context.Container(r.Context())
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
@@ -61,13 +61,13 @@ func Find(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sender, ok := vars["sender"]
 	if !ok {
-		responseWriterHelpers.WriteError(w, MissingParameterErr("sender"))
+		responseWriterHelpers.Error(w, MissingParameterErr("sender"))
 		return
 	}
 
 	recipient, ok := vars["recipient"]
 	if !ok {
-		responseWriterHelpers.WriteError(w, MissingParameterErr("recipient"))
+		responseWriterHelpers.Error(w, MissingParameterErr("recipient"))
 		return
 	}
 
@@ -83,19 +83,19 @@ func Find(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
 	// Write the response
-	responseWriterHelpers.WriteResponse(w, res, http.StatusOK)
+	responseWriterHelpers.Response(w, res, http.StatusOK)
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
 
 	container, err := context.Container(r.Context())
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
@@ -103,7 +103,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	var updateRequest model.UpdateAliasRequest
 	err = getRequest(r, &updateRequest)
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
@@ -113,19 +113,19 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
 	// Write the response
-	responseWriterHelpers.WriteResponse(w, res, http.StatusOK)
+	responseWriterHelpers.Response(w, res, http.StatusOK)
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
 
 	container, err := context.Container(r.Context())
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
@@ -133,7 +133,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	var deleteRequest model.DeleteAliasRequest
 	err = getRequest(r, &deleteRequest)
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
@@ -143,10 +143,10 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		responseWriterHelpers.WriteError(w, err)
+		responseWriterHelpers.Error(w, err)
 		return
 	}
 
 	// Write the response
-	responseWriterHelpers.WriteEmptyResponse(w, http.StatusOK)
+	responseWriterHelpers.EmptyResponse(w, http.StatusOK)
 }

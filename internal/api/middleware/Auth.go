@@ -18,7 +18,7 @@ func Auth(next http.Handler) http.Handler {
 
 		container, err := context.Container(r.Context())
 		if err != nil {
-			responseWriterHelpers.WriteError(w, err)
+			responseWriterHelpers.Error(w, err)
 			return
 		}
 
@@ -34,7 +34,7 @@ func Auth(next http.Handler) http.Handler {
 		// Check for access token
 		apiKeyHeader := r.Header[ApiKeyHeader]
 		if len(apiKeyHeader) > 1 {
-			responseWriterHelpers.WriteBadRequestf(w, "only one %s is allowed", ApiKeyHeader)
+			responseWriterHelpers.BadRequestf(w, "only one %s is allowed", ApiKeyHeader)
 			return
 		}
 
@@ -46,7 +46,7 @@ func Auth(next http.Handler) http.Handler {
 			})
 
 			if err != nil {
-				responseWriterHelpers.WriteError(w, err)
+				responseWriterHelpers.Error(w, err)
 				return
 			}
 
@@ -55,6 +55,6 @@ func Auth(next http.Handler) http.Handler {
 			}
 		}
 
-		responseWriterHelpers.WriteUnauthorized(w)
+		responseWriterHelpers.Unauthorized(w)
 	})
 }

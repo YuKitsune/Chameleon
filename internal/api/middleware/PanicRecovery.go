@@ -24,7 +24,7 @@ func PanicRecovery(next http.Handler) http.Handler {
 					})
 				}
 
-				responseWriterHelpers.WriteEmptyResponse(w, http.StatusInternalServerError)
+				responseWriterHelpers.EmptyError(w)
 			}
 		}()
 
