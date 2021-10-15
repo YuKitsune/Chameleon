@@ -8,5 +8,4 @@ smtp:
     start-tls-on: true
     always-on: true
 log:
-  directory: ./logs
   level: Debug

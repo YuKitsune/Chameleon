@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/yukitsune/chameleon/internal/log"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon/internal/rfc5321"
 	"net"
 	"net/mail"
@@ -50,12 +50,12 @@ type client struct {
 	ar         *adjustableLimitedReader
 	// guards access to conn
 	connGuard sync.Mutex
-	log       log.ChameleonLogger
+	log       *logrus.Logger
 	parser    rfc5321.Parser
 }
 
 // NewClient allocates a new client.
-func NewClient(conn net.Conn, clientID uint64, logger log.ChameleonLogger, envelope *EnvelopePool) *client {
+func NewClient(conn net.Conn, clientID uint64, logger *logrus.Logger, envelope *EnvelopePool) *client {
 	c := &client{
 		conn: conn,
 		// Envelope will be borrowed from the envelope pool
@@ -77,7 +77,7 @@ func NewClient(conn net.Conn, clientID uint64, logger log.ChameleonLogger, envel
 // the response gets buffered
 func (c *client) sendResponse(r ...interface{}) {
 	c.bufout.Reset(c.conn)
-	if c.log.IsDebug() {
+	if c.log.GetLevel() == logrus.DebugLevel {
 		// an additional buffer so that we can log the response in debug mode only
 		c.response.Reset()
 	}
@@ -97,7 +97,7 @@ func (c *client) sendResponse(r ...interface{}) {
 		if _, c.bufErr = c.bufout.WriteString(out); c.bufErr != nil {
 			c.log.WithError(c.bufErr).Error("could not write to c.bufout")
 		}
-		if c.log.IsDebug() {
+		if c.log.GetLevel() == logrus.DebugLevel {
 			c.response.WriteString(out)
 		}
 		if c.bufErr != nil {
@@ -105,7 +105,7 @@ func (c *client) sendResponse(r ...interface{}) {
 		}
 	}
 	_, c.bufErr = c.bufout.WriteString("\r\n")
-	if c.log.IsDebug() {
+	if c.log.GetLevel() == logrus.DebugLevel {
 		c.response.WriteString("\r\n")
 	}
 }

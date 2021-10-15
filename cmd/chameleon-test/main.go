@@ -3,19 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/yukitsune/chameleon/internal/grace"
-	"github.com/yukitsune/chameleon/internal/log"
+	"log"
 	"net/smtp"
 )
 
 func main() {
-
-	logger, err := log.New(&log.Config{
-		Directory: "./logs",
-		Level:     "trace",
-	})
-	if err != nil {
-		return
-	}
 
 	fmt.Println("Hello, World!")
 
@@ -41,8 +33,8 @@ func main() {
 
 	err = smtp.SendMail(host, nil, "sender@example.org", to, msg)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 
-	grace.WaitForShutdownSignal(logger)
+	grace.WaitForShutdownSignal()
 }

@@ -2,9 +2,9 @@ package apiKey
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/model"
-	"github.com/yukitsune/chameleon/internal/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -12,10 +12,10 @@ import (
 type CheckApiKeyHandler struct {
 	ctx context.Context
 	db *db.MongoConnectionWrapper
-	log log.ChameleonLogger
+	log *logrus.Logger
 }
 
-func NewCheckApiKeyHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *CheckApiKeyHandler {
+func NewCheckApiKeyHandler(ctx context.Context, db *db.MongoConnectionWrapper, log *logrus.Logger) *CheckApiKeyHandler {
 	return &CheckApiKeyHandler{ctx, db, log}
 }
 

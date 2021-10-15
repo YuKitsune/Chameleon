@@ -2,19 +2,19 @@ package alias
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/model"
-	"github.com/yukitsune/chameleon/internal/log"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UpdateAliasHandler struct {
 	ctx context.Context
 	db *db.MongoConnectionWrapper
-	log log.ChameleonLogger
+	log *logrus.Logger
 }
 
-func NewUpdateAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *UpdateAliasHandler {
+func NewUpdateAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log *logrus.Logger) *UpdateAliasHandler {
 	return &UpdateAliasHandler{ctx, db, log}
 }
 

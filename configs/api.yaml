@@ -9,5 +9,4 @@ server:
     password: chameleon
     database: chameleon
 log:
-  directory: ./logs
   level: Debug

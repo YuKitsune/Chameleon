@@ -1,17 +1,20 @@
 package log
 
+import "github.com/sirupsen/logrus"
+
+const (
+	TextFormatter int = iota
+	JsonFormatter
+)
+
 type Config struct {
-	Directory string `mapstructure:"directory"`
 	Level     string `mapstructure:"level"`
+	Formatter int `mapstructure:"formatter"`
 }
 
 func (l *Config) SetDefaults() error {
-	if l.Directory == "" {
-		l.Directory = "./log"
-	}
-
 	if l.Level == "" {
-		l.Level = InfoLevel.String()
+		l.Level = logrus.InfoLevel.String()
 	}
 
 	return nil

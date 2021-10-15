@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api"
@@ -77,7 +78,7 @@ func serve(command *cobra.Command, args []string) error {
 		return err
 	}
 
-	return container.Resolve(func(svr *api.ChameleonApiServer, logger log.ChameleonLogger) {
+	return container.Resolve(func(svr *api.ChameleonApiServer, logger *logrus.Logger) {
 
 		// Run our server in a goroutine so that it doesn't block.
 		errorChan := make(chan error, 1)
@@ -89,7 +90,7 @@ func serve(command *cobra.Command, args []string) error {
 			}
 		}()
 
-		grace.WaitForShutdownSignalOrError(errorChan, logger, func() { _ = svr.Shutdown() })
+		grace.WaitForShutdownSignalOrError(errorChan, func() { _ = svr.Shutdown() })
 	})
 }
 
@@ -111,7 +112,7 @@ func buildContainer(cfg *ChameleonApiConfig) (camogo.Container, error) {
 	}
 
 	// Services
-	err = cb.RegisterFactory(log.New, camogo.SingletonLifetime)
+	err = cb.RegisterFactory(log.NewLogrusLogger, camogo.SingletonLifetime)
 	if err != nil {
 		return nil, err
 	}

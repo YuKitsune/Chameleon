@@ -2,9 +2,9 @@ package alias
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/model"
-	"github.com/yukitsune/chameleon/internal/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -12,10 +12,10 @@ import (
 type DeleteAliasHandler struct {
 	ctx context.Context
 	db *db.MongoConnectionWrapper
-	log log.ChameleonLogger
+	log *logrus.Logger
 }
 
-func NewDeleteAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *DeleteAliasHandler {
+func NewDeleteAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log *logrus.Logger) *DeleteAliasHandler {
 	return &DeleteAliasHandler{ctx, db, log}
 }
 

@@ -6,8 +6,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon"
-	"github.com/yukitsune/chameleon/internal/log"
 	"github.com/yukitsune/chameleon/internal/rfc5321"
 	"io"
 	"io/ioutil"
@@ -49,7 +49,7 @@ type Server struct {
 	hosts           allowedHosts // stores map[string]bool for faster lookup
 	state           int
 	// If log changed after a config reload, newLogStore stores the value here until it's safe to change it
-	log          log.ChameleonLogger
+	log          *logrus.Logger
 	handler      Handler
 	envelopePool *EnvelopePool
 }
@@ -82,7 +82,7 @@ func (c command) match(in []byte) bool {
 }
 
 // Creates and returns a new ready-to-run Server from a Config configuration
-func NewServer(sc *Config, handler Handler, log log.ChameleonLogger) (*Server, error) {
+func NewServer(sc *Config, handler Handler, log *logrus.Logger) (*Server, error) {
 	server := &Server{
 		config:          sc,
 		clientPool:      NewPool(sc.MaxClients),
@@ -394,7 +394,7 @@ func (s *Server) handleClient(client *client) {
 				if h, err := client.parser.Helo(input[4:]); err == nil {
 					client.Helo = h
 				} else {
-					s.log.WithFields(log.Fields{"helo": h, "client": client.ID}).Warn("invalid helo")
+					s.log.WithFields(logrus.Fields{"helo": h, "client": client.ID}).Warn("invalid helo")
 					client.sendResponse(r.FailSyntaxError)
 					break
 				}
@@ -406,7 +406,7 @@ func (s *Server) handleClient(client *client) {
 					client.Helo = h
 				} else {
 					client.sendResponse(r.FailSyntaxError)
-					s.log.WithFields(log.Fields{"ehlo": h, "client": client.ID}).Warn("invalid ehlo")
+					s.log.WithFields(logrus.Fields{"ehlo": h, "client": client.ID}).Warn("invalid ehlo")
 					client.sendResponse(r.FailSyntaxError)
 					break
 				}
@@ -579,7 +579,7 @@ func (s *Server) handleClient(client *client) {
 		}
 		// flush the response buffer
 		if client.bufout.Buffered() > 0 {
-			if s.log.IsDebug() {
+			if s.log.GetLevel() == logrus.DebugLevel {
 				s.log.Debugf("Writing response to client: \n%s", client.response.String())
 			}
 			err := s.flushResponse(client)
@@ -599,7 +599,7 @@ func (s *Server) defaultHost(a *Address) {
 		a.Host = sc.Hostname
 		if !s.allowsHost(a.Host) {
 			s.log.WithFields(
-				log.Fields{"hostname": sc.Hostname}).
+				logrus.Fields{"hostname": sc.Hostname}).
 				Warn("the hostname is not present in AllowedHosts config setting")
 		}
 	}

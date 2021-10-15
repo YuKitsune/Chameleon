@@ -2,7 +2,7 @@ package smtp
 
 import (
 	"errors"
-	"github.com/yukitsune/chameleon/internal/log"
+	"github.com/sirupsen/logrus"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -126,7 +126,7 @@ func (p *Pool) GetActiveClientsCount() int {
 }
 
 // Borrow a Client from the pool. Will block if len(activeClients) > maxClients
-func (p *Pool) Borrow(conn net.Conn, clientID uint64, logger log.ChameleonLogger, ep *EnvelopePool) (Poolable, error) {
+func (p *Pool) Borrow(conn net.Conn, clientID uint64, logger *logrus.Logger, ep *EnvelopePool) (Poolable, error) {
 	p.poolGuard.Lock()
 	defer p.poolGuard.Unlock()
 

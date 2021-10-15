@@ -2,7 +2,7 @@ package grace
 
 import (
 	"fmt"
-	"github.com/yukitsune/chameleon/internal/log"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,53 +14,52 @@ type Grace struct {
 	shutdownHooks []shutdownHook
 }
 
-func WaitForShutdownSignal(logger log.ChameleonLogger, shutdownHooks ...shutdownHook) {
-	waitForSignal(getShutdownSignalChan(), make(chan error, 1), logger)
+func WaitForShutdownSignal(shutdownHooks ...shutdownHook) {
+	waitForSignal(getShutdownSignalChan(), make(chan error, 1))
 	for _, hook := range shutdownHooks {
 		hook()
 	}
 }
 
-func WaitForShutdownSignalOrError(errorChan chan error, logger log.ChameleonLogger, shutdownHooks ...shutdownHook) {
-	waitForSignal(getShutdownSignalChan(), errorChan, logger)
+func WaitForShutdownSignalOrError(errorChan chan error, shutdownHooks ...shutdownHook) {
+	waitForSignal(getShutdownSignalChan(), errorChan)
 	for _, hook := range shutdownHooks {
 		hook()
 	}
 }
 
-func waitForSignal(shutdownSignalChan chan os.Signal, errorChan chan error, logger log.ChameleonLogger) {
+func waitForSignal(shutdownSignalChan chan os.Signal, errorChan chan error) {
 	select {
 	case sig := <-shutdownSignalChan:
-		handleShutdownSignal(sig, logger)
+		handleShutdownSignal(sig)
 		break
 
 	case err := <-errorChan:
-		handleError(err, logger)
+		handleError(err)
 		break
 	}
 }
 
-func handleShutdownSignal(sig os.Signal, logger log.ChameleonLogger) {
+func handleShutdownSignal(sig os.Signal) {
 	if sig == syscall.SIGTERM || sig == syscall.SIGQUIT || sig == syscall.SIGINT || sig == os.Kill {
-		logger.Infof("Shutdown signal caught")
+		log.Println("Shutdown signal caught")
 		go func() {
 			select {
 			// exit if graceful shutdown not finished in 60 sec.
 			case <-time.After(time.Second * 60):
-				logger.Error("graceful shutdown timed out")
-				os.Exit(1)
+				log.Fatalln("graceful shutdown timed out")
 			}
 		}()
-		logger.Infof("Shutdown completed, exiting")
+		log.Println("Shutdown completed, exiting")
 		return
 	} else {
-		logger.Infof("Shutdown, unknown signal caught")
+		log.Printf("Shutdown, unknown signal caught: %s", sig.String())
 		return
 	}
 }
 
-func handleError(err error, logger log.ChameleonLogger) {
-	logger.Fatalf("A fatal error has occurred: %v", err)
+func handleError(err error) {
+	log.Fatalf("A fatal error has occurred: %v", err)
 }
 
 func getShutdownSignalChan() chan os.Signal {

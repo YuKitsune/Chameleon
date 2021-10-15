@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/yukitsune/chameleon/internal/log"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon/pkg/client"
 	"github.com/yukitsune/chameleon/pkg/smtp"
 	"net/url"
@@ -11,14 +11,14 @@ type DefaultHandler struct {
 	client client.HttpChameleonClient
 }
 
-func NewDefaultHandler(baseApiUrl *url.URL, logger log.ChameleonLogger) *DefaultHandler {
+func NewDefaultHandler(baseApiUrl *url.URL, logger *logrus.Logger) *DefaultHandler {
 	chameleonClient := client.NewHttpChameleonClient(baseApiUrl, logger)
 	return &DefaultHandler{
 		client: chameleonClient,
 	}
 }
 
-func (d DefaultHandler) ValidateRcpt(e *smtp.Envelope, logger log.ChameleonLogger) error {
+func (d DefaultHandler) ValidateRcpt(e *smtp.Envelope, logger *logrus.Logger) error {
 
 	// Todo: Check each recipient and ensure at least one of them is valid
 	sender := e.MailFrom.String()
@@ -41,7 +41,7 @@ func (d DefaultHandler) ValidateRcpt(e *smtp.Envelope, logger log.ChameleonLogge
 	//	  - By domain
 }
 
-func (d DefaultHandler) Handle(e *smtp.Envelope, logger log.ChameleonLogger) smtp.Result {
+func (d DefaultHandler) Handle(e *smtp.Envelope, logger *logrus.Logger) smtp.Result {
 	err := d.client.Handle(e)
 	if err != nil {
 		return smtp.NewResult(smtp.Canned.FailBackendTransaction)

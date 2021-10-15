@@ -72,7 +72,7 @@ func serve(command *cobra.Command, args []string) error {
 	}
 
 	// Setup the logger
-	logger, err := log.New(mtdConfig.Logging)
+	logger, err := log.NewLogrusLogger(mtdConfig.Logging)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func serve(command *cobra.Command, args []string) error {
 	}()
 
 	// server.Start doesn't block, wait for exit signal or error
-	grace.WaitForShutdownSignalOrError(errorChan, logger, server.Shutdown)
+	grace.WaitForShutdownSignalOrError(errorChan, server.Shutdown)
 
 	return nil
 }

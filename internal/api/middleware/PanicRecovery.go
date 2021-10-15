@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon/internal/api/context"
 	"github.com/yukitsune/chameleon/internal/api/responseWriterHelpers"
-	"github.com/yukitsune/chameleon/internal/log"
 	"net/http"
 	"runtime"
 )
@@ -19,7 +19,7 @@ func PanicRecovery(next http.Handler) http.Handler {
 				// Todo: It'd be nice to not have to fetch the container here
 				container, _ := context.Container(r.Context())
 				if container != nil {
-					_ = container.Resolve(func(logger log.ChameleonLogger) {
+					_ = container.Resolve(func(logger *logrus.Logger) {
 						logger.Errorf("Recovering from panic: %v\n%s\n", err, buf)
 					})
 				}

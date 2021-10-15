@@ -3,12 +3,12 @@ package api
 import (
 	"context"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/camogo"
 	"github.com/yukitsune/chameleon/internal/api/config"
 	"github.com/yukitsune/chameleon/internal/api/middleware"
 	"github.com/yukitsune/chameleon/internal/api/modules"
 	"github.com/yukitsune/chameleon/internal/api/routers"
-	"github.com/yukitsune/chameleon/internal/log"
 	"net/http"
 	"time"
 )
@@ -17,10 +17,10 @@ type ChameleonApiServer struct {
 	config    *config.Config
 	svr       *http.Server
 	container camogo.Container
-	log       log.ChameleonLogger
+	log       *logrus.Logger
 }
 
-func NewChameleonApiServer(config *config.Config, logger log.ChameleonLogger) (*ChameleonApiServer, error) {
+func NewChameleonApiServer(config *config.Config, logger *logrus.Logger) (*ChameleonApiServer, error) {
 	api := &ChameleonApiServer{
 		config: config,
 		log:    logger,
@@ -55,13 +55,13 @@ func (api *ChameleonApiServer) StartTLS() error {
 	return api.svr.ListenAndServeTLS(api.config.CertFile, api.config.KeyFile)
 }
 
-func buildContainer(dbConfig *config.DbConfig, logger log.ChameleonLogger) (camogo.Container, error) {
+func buildContainer(dbConfig *config.DbConfig, logger *logrus.Logger) (camogo.Container, error) {
 	cb := camogo.NewBuilder()
 
 	var err error
 
 	// Logger
-	err = cb.RegisterFactory(func () log.ChameleonLogger {
+	err = cb.RegisterFactory(func () *logrus.Logger {
 		return logger
 	},
 		camogo.TransientLifetime)

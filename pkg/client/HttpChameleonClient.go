@@ -5,7 +5,7 @@ import (
 	json "encoding/json"
 	"errors"
 	"fmt"
-	"github.com/yukitsune/chameleon/internal/log"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon/pkg/resources"
 	"github.com/yukitsune/chameleon/pkg/smtp"
 	"io/ioutil"
@@ -17,10 +17,10 @@ import (
 type HttpChameleonClient struct {
 	BaseURL    *url.URL
 	httpClient http.Client
-	logger     log.ChameleonLogger
+	logger     *logrus.Logger
 }
 
-func NewHttpChameleonClient(baseUrl *url.URL, logger log.ChameleonLogger) HttpChameleonClient {
+func NewHttpChameleonClient(baseUrl *url.URL, logger *logrus.Logger) HttpChameleonClient {
 	return HttpChameleonClient{
 		BaseURL:    baseUrl,
 		httpClient: http.Client{},
@@ -47,7 +47,7 @@ func (c *HttpChameleonClient) Validate(sender string, recipient string) error {
 
 	// Todo: Improve handling for other status codes
 	body, err := ioutil.ReadAll(res.Body)
-	c.logger.WithFields(log.Fields{
+	c.logger.WithFields(logrus.Fields{
 		"code": strconv.Itoa(res.StatusCode),
 		"data": body,
 	}).Errorf("Expected 200 when validating sender/recipient but found %d", res.StatusCode)
@@ -73,7 +73,7 @@ func (c *HttpChameleonClient) Handle(e *smtp.Envelope) error {
 
 	// Todo: Improve handling for other status codes
 	body, err := ioutil.ReadAll(res.Body)
-	c.logger.WithFields(log.Fields{
+	c.logger.WithFields(logrus.Fields{
 		"code": strconv.Itoa(res.StatusCode),
 		"data": body,
 	}).Errorf("Expected 200 when validating sender/recipient but found %d", res.StatusCode)

@@ -2,10 +2,10 @@ package alias
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"github.com/yukitsune/chameleon/internal/api/db"
 	"github.com/yukitsune/chameleon/internal/api/handlers/errors"
 	"github.com/yukitsune/chameleon/internal/api/model"
-	"github.com/yukitsune/chameleon/internal/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"regexp"
@@ -14,10 +14,10 @@ import (
 type FindAliasHandler struct {
 	ctx context.Context
 	db *db.MongoConnectionWrapper
-	log log.ChameleonLogger
+	log *logrus.Logger
 }
 
-func NewFindAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log log.ChameleonLogger) *FindAliasHandler {
+func NewFindAliasHandler(ctx context.Context, db *db.MongoConnectionWrapper, log *logrus.Logger) *FindAliasHandler {
 	return &FindAliasHandler{ctx, db, log}
 }
 
