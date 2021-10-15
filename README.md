@@ -1,6 +1,5 @@
 > 🏗️ This is a work-in-progress, contributions are welcomed! 🚧
 
-
 # Chameleon
 Chameleon is an email cloaking service written in Go, and React (TypeScript).
 
@@ -54,8 +53,14 @@ Chameleon is an email cloaking service written in Go, and React (TypeScript).
       - [ ] Billing reminders
     - [ ] New entry in quarantine
   - [ ] Testing
+    - [ ] Move mongodb calls behind a repository pattern so testing can be easier
     - [ ] Can re-work some existing tests so that they test the handlers instead of the API itself
+- [ ] Frontend
+  - [ ] We need one...
+  - [ ] Spike out a PoC and work backwards to the API
 - [ ] MTD (Mail Transfer Daemon)
+  - [ ] Investigate:
+    - [ ] Can we rip this out and just use the original go-guerilla? 
   - [ ] Accept incoming mail
     - [ ] Support for TLS
     - [ ] Support for S/MIME
@@ -74,10 +79,14 @@ Chameleon is an email cloaking service written in Go, and React (TypeScript).
     - [ ]
   - [ ] Testing
     - [ ] Need some stress/smoke testing in place
+- [ ] Post MVP
+  - [ ] Split `pkg/mediator` into a separate repo
+  - [ ] Clean up `cobra`/`viper` integration
+  - [ ] Implement Prometheus and Grafana for monitoring
 
 # Contributing
 
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what make the open source community such an amazing place to be, learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 1. Fork the Project
 2. Create your Feature Branch (`feature/AmazingFeature`)
