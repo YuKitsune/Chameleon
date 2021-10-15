@@ -5,16 +5,75 @@
 Chameleon is an email cloaking service written in Go, and React (TypeScript).
 
 # Current Todos
-1. Implement a Mediator pattern between the API handler, and the unit of work
-2. Custom IoC implementation (dig doesn't let us change the lifetime) (Unless there is a better solution?)
-3. Per-request transactions? 😯
-
-
-## Maybes
-- Custom ORM
-  - With blackjack, and hookers
-  - Maybe a more strongly-typed query builder?
-  - Maybe a strongly typed migrator with rollback capabilities?
+- [ ] API
+  - [ ] Users
+    - [ ] Sign-up
+    - [ ] Log-in
+      - [ ] TOTP support 
+      - [ ] U2F support
+    - [ ] Update details
+    - [ ] Migrate account (Moving from cloud to self-hosted instance)
+      - [ ] Need to flesh this out
+    - [ ] Delete account
+  - [ ] Aliases
+    - [X] Create
+      - [ ] Automatically determine sender on first received message
+    - [X] Find by Sender and Recipient
+      - [ ] Available to MTD via API 
+    - [ ] List all
+    - [X] Update
+    - [X] Delete
+    - [ ] Statistics
+      - [ ] What would be useful to know here?
+      - [ ] Matches sender addresses (E.g. 50% marketing@xyz.com, 25% security@... etc.)
+      - [ ] Failed matches (Potential leaks)
+    - [ ] Customisable aliases (Required higher tier for cloud) 
+    - [ ] Verification
+      - [ ] Can't forward mail unless the recipient address has been verified
+    - [ ] Restrict access to owner
+  - [ ] Temporary mail storage
+    - [ ] Temporarily store mail if it:
+      - [ ] fails to deliver
+        - [ ] Retry sending every N minutes (default: 1)   
+          - [ ] N can be user configurable
+          - [ ] Throttle N after X attempts 
+          - [ ] Give up after Y attempts
+        - [ ] Users can choose to have **all** mail stored by default (Higher tier required for cloud)
+    - [ ] Encrypt using S/MIME
+      - [ ] Need to flesh this out, S/MIME is weird
+  - [ ] Quarantined mail
+    - [ ] Restrict access to owner
+    - [ ] Retention policies
+      - [ ] keep for up-to N days (default: 30)
+        - [ ] N can be user configurable
+      - [ ] Users can choose to have **all** mail stored by default (Higher tier required for cloud)
+  - [ ] Notifications
+    - [ ] Cloud only
+      - [ ] Approaching/reached maximum number of aliases
+      - [ ] Approaching/reached temporary storage limit
+      - [ ] Billing reminders
+    - [ ] New entry in quarantine
+  - [ ] Testing
+    - [ ] Can re-work some existing tests so that they test the handlers instead of the API itself
+- [ ] MTD (Mail Transfer Daemon)
+  - [ ] Accept incoming mail
+    - [ ] Support for TLS
+    - [ ] Support for S/MIME
+      - [ ] Need to flesh this out, S/MIME is weird
+    - [ ] Fetch alias from API based on sender and recipient address
+      - [ ] If there's a match:
+        - [ ] Forward the message to the intended recipient
+          - [ ] If forwarding succeeds
+            - [ ] Respond with a success code/message (Whatever SMTP likes)
+          - [ ] Otherwise:
+            - [ ] Store in the temporary store via the API
+      - [ ] Otherwise:
+        - [ ] Create a new quarantine entry via the API
+        - [ ] Respond with an unsuccessful code/message (Whatever SMTP likes)
+  - [ ] Try sending mail that may have previously failed to send
+    - [ ]
+  - [ ] Testing
+    - [ ] Need some stress/smoke testing in place
 
 # Contributing
 
