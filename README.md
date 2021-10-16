@@ -52,6 +52,9 @@ Chameleon is an email cloaking service written in Go, and React (TypeScript).
       - [ ] Approaching/reached temporary storage limit
       - [ ] Billing reminders
     - [ ] New entry in quarantine
+    - [ ] Security
+      - [ ] Failed login attempt 
+      - [ ] Suspicious login attempt 
   - [ ] Testing
     - [ ] Move mongodb calls behind a repository pattern so testing can be easier
     - [ ] Can re-work some existing tests so that they test the handlers instead of the API itself
@@ -83,6 +86,12 @@ Chameleon is an email cloaking service written in Go, and React (TypeScript).
   - [ ] Split `pkg/mediator` into a separate repo
   - [ ] Clean up `cobra`/`viper` integration
   - [ ] Implement Prometheus and Grafana for monitoring
+  - [ ] Custom domain support
+  - [ ] Reply from alias
+  - [ ] Native apps
+    - [ ] Electron
+    - [ ] iOS/Android
+    - [ ] CLI
 
 # Contributing
 

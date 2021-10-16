@@ -1,46 +1,38 @@
 <script lang="ts">
-	import Header from '$lib/header/Header.svelte';
+	import Navbar from '$lib/header/Navbar.svelte';
 	import '../tailwind.css'
-	import '../app.css';
 </script>
 
-<Header />
+<div class='flex flex-col h-screen overflow-hidden bg-gray-100'>
+	<Navbar class='w-full'/>
 
-<main>
-	<slot />
-</main>
+	<div class='content'>
+		<main class='child'>
+			<slot/>
+		</main>
 
-<footer>
-	<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
-</footer>
+		<footer class='footer'>
+			<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
+		</footer>
+
+	</div>
+</div>
+
 
 <style>
-	main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		width: 100%;
-		max-width: 1024px;
-		margin: 0 auto;
-		box-sizing: border-box;
+	.content {
+			@apply flex flex-col flex-grow items-center justify-between px-24 p-4 overflow-y-scroll;
 	}
 
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 40px;
+	.child {
+			@apply flex-grow w-full rounded-md bg-white shadow-2xl p-4;
+	}
+
+	.footer {
+			@apply flex flex-col flex-grow-0 items-center justify-center pt-4;
 	}
 
 	footer a {
 		font-weight: bold;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 40px 0;
-		}
 	}
 </style>
