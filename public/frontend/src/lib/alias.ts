@@ -1,6 +1,11 @@
 
 export default interface Alias {
-	Alias: string;
+	Name: string;
+	Address: string;
 	WhitelistPattern: string;
 	IsActive: boolean;
+	EncryptionEnabled: boolean;
+	LastUsed: number;
 }
+
+export type AliasTemplate = "Template";

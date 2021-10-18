@@ -1,13 +1,18 @@
 
 <script lang="ts">
-	import AliasRow from '$lib/AliasRow.svelte';
+	import AliasListItem from '$lib/AliasListItem.svelte';
 	import type Alias from '$lib/alias';
 
 	export let aliases: Alias[] = [];
+	export let allowAdd = true;
 </script>
 
-<div class='flex flex-col gap-1'>
+<div class='flex flex-row grid grid-cols-2 gap-4'>
 	{#each aliases as alias}
-		<AliasRow alias={alias} />
+		<AliasListItem alias={alias} />
 	{/each}
+
+	{#if allowAdd}
+		<AliasListItem isTemplate={true} />
+	{/if}
 </div>

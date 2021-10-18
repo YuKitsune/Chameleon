@@ -2,9 +2,9 @@
 	import AliasList from '$lib/AliasList.svelte';
 
 	let dummyData = [
-		{Alias: "john.doe@chameleon.io", WhitelistPattern: ".*@facebook\\.com"},
-		{Alias: "jupiter_push@chameleon.io", WhitelistPattern: ".*@google\\.com"},
-		{Alias: "andromeda-audio@chameleon.io", WhitelistPattern: ".*@somewhere-dodgy\\.com"}
+		{Name:"Facebook", Address: "john.doe@chameleon.io", WhitelistPattern: ".*@facebook\\.com", LastUsed: 5, EncryptionEnabled: true},
+		{Name:"Google", Address: "jupiter_push@chameleon.io", WhitelistPattern: ".*@google\\.com", LastUsed: 3, EncryptionEnabled: true},
+		{Name:"Somewhere Dodgy", Address: "andromeda-audio@chameleon.io", WhitelistPattern: ".*@somewhere-dodgy\\.com", LastUsed: 2, EncryptionEnabled: false}
 	]
 </script>
 <svelte:head>
@@ -12,8 +12,6 @@
 </svelte:head>
 
 <div>
-	<h1 class='text-xl'>Aliases</h1>
-
-	<!-- Dummy data-->
+	<h1 class='text-2xl'>Aliases</h1>
 	<AliasList aliases={dummyData} />
 </div>
