@@ -1,30 +1,63 @@
+<script>
+	import TextInput from '$lib/TextInput.svelte';
+	import {TextSize} from '$lib/TextSize';
+	import Section from '$lib/Section.svelte';
+</script>
 
-<h1 class='text-3xl'>My Details</h1>
-<!-- Primary/secondary email address -->
+<div class='flex flex-row grid grid-cols-2 gap-4'>
 
-<h1 class='text-3xl'>Billing</h1>
+	<!-- Details -->
+	<Section header='My Details'>
+		<TextInput label='Primary Email'/>
+		<TextInput label='Secondary Email'/>
+	</Section>
 
-<h1 class='text-xl'>Tiers</h1>
+	<!-- Billing -->
+	<Section header='Billing'>
+		<div class='flex flex-row grid grid-cols-2 gap-2'>
 
-<h1 class='text-xl'>Storage</h1>
+			<Section header='Tiers' headerSize={TextSize.Large}>
+				🚧 Todo 🚧
+			</Section>
 
-<h1 class='text-xl'>Payment Method</h1>
+			<Section header='Payment Method' headerSize={TextSize.Large}>
+				🚧 Todo 🚧
+			</Section>
 
-<h1 class='text-3xl'>Security</h1>
-<h1 class='text-xl'>Password</h1>
-<!-- Update password -->
+			<Section header='Usage' headerSize={TextSize.Large} className='col-span-2'>
+				🚧 Todo 🚧
+			</Section>
 
-<h1 class='text-xl'>Two-Factor Authentication</h1>
-<!-- TOTP -->
-<!-- U2F -->
+		</div>
+	</Section>
 
-<h1 class='text-xl'>Events</h1>
-<!-- New logins -->
-<!-- New logins -->
+	<!-- Security -->
+	<Section header='Security'>
+		<div class='flex flex-row grid grid-cols-2 gap-2'>
 
-<h1 class='text-xl'>Sessions</h1>
-<!-- Signed in devices -->
-<!-- Signed out of all devices -->
+			<Section header='Password' headerSize={TextSize.Large}>
+				🚧 Todo 🚧
+			</Section>
 
-<h1 class='text-3xl'>Danger Zone</h1>
-<!-- Delete account -->
+			<Section header='Two Factor Authentication' headerSize={TextSize.Large}>
+				🚧 Todo 🚧
+			</Section>
+
+			<Section header='Sessions' headerSize={TextSize.Large}>
+				🚧 Todo 🚧
+			</Section>
+
+			<Section header='Events' headerSize={TextSize.Large}>
+				🚧 Todo 🚧
+			</Section>
+
+		</div>
+	</Section>
+
+	<!-- Danger Zone -->
+	<Section header='Danger Zone'>
+		🚧 Todo 🚧
+		<!-- Delete account -->
+	</Section>
+
+</div>

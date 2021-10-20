@@ -1,11 +1,21 @@
+<script>
+	import Section from '$lib/Section.svelte';
+</script>
 
-<h1 class='text-3xl'>Mail Forwarding</h1>
-<!-- Retry interval -->
-<!-- Number of retries before giving up -->
+<div class='flex flex-row grid grid-cols-2 gap-4'>
 
-<h1 class='text-3xl'>Quarantined Mail</h1>
-<!-- Days to keep before deleting -->
+	<Section header='Mail Forwarding'>
+		<!-- Retry interval -->
+		<!-- Number of retries before giving up -->
+	</Section>
 
-<h1 class='text-3xl'>Danger Zone</h1>
-<!-- Delete all quarantined mail -->
-<!-- Delete all aliases -->
+	<Section header='Quarantined Mail'>
+		<!-- Days to keep before deleting -->
+	</Section>
+
+	<Section header='Danger Zone'>
+		<!-- Delete all quarantined mail -->
+		<!-- Delete all aliases -->
+	</Section>
+
+</div>
