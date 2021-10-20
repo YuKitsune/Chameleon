@@ -88,6 +88,8 @@ Chameleon is an email cloaking service written in Go, and React (TypeScript).
   - [ ] Implement Prometheus and Grafana for monitoring
   - [ ] Custom domain support
   - [ ] Reply from alias
+  - [ ] Crowdsourced email and domain ratings
+  - [ ] VirusTotal scans on attachments (High tier)
   - [ ] Native apps
     - [ ] Electron
     - [ ] iOS/Android
