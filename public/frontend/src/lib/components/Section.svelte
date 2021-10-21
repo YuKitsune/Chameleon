@@ -1,5 +1,5 @@
 <script lang='ts'>
-	import { TextSize, textSizeToClassName } from '$lib/TextSize';
+	import { TextSize, textSizeToClassName } from '$lib/model/TextSize';
 
 	export let header: string;
 	export let headerSize: TextSize = TextSize.ExtraLarge;

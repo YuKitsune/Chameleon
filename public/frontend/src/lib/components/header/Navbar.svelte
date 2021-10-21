@@ -1,9 +1,9 @@
 <script>
-	import UserCircle from '$lib/icons/UserCircle.svelte';
-	import NotificationIcon from '$lib/icons/NotificationIcon.svelte';
-	import Link from '$lib/header/Link.svelte';
-	import Dropdown from '$lib/Dropdown.svelte';
-	import DropdownItem from '$lib/DropdownItem.svelte';
+	import UserCircle from '$lib/components/icons/UserCircle.svelte';
+	import NotificationIcon from '$lib/components/icons/NotificationIcon.svelte';
+	import Link from '$lib/components/header/Link.svelte';
+	import Dropdown from '$lib/components/Dropdown.svelte';
+	import DropdownItem from '$lib/components/DropdownItem.svelte';
 </script>
 
 <div class="items-center justify-between flex bg-green-500 text-white bg-opacity-90 px-24 py-2 shadow-2xl">

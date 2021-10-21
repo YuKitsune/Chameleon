@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type QuarantinedMail from '$lib/quarantinedMail';
+	import type QuarantinedMail from '$lib/model/quarantinedMail';
 	export let quarantinedMail: QuarantinedMail;
 </script>
 

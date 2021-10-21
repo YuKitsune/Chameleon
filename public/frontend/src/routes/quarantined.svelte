@@ -1,5 +1,5 @@
 <script lang="ts">
-	import QuarantinedMailList from '$lib/QuarantinedMailList.svelte';
+	import QuarantinedMailList from '$lib/components/QuarantinedMailList.svelte';
 
 	let dummyData = [
 		{Sender:"danny.devito@macaroni.cheese", Recipient: {Name:"Facebook", Address: "john.doe@chameleon.io"}, Subject: "Smell my nuts", DateReceived: 5},

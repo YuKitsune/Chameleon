@@ -1,7 +1,7 @@
 
 <script lang="ts">
-	import AliasListItem from '$lib/AliasListItem.svelte';
-	import type Alias from '$lib/alias';
+	import AliasListItem from '$lib/components/AliasListItem.svelte';
+	import type Alias from '$lib/model/alias';
 
 	export let aliases: Alias[] = [];
 	export let allowAdd = true;

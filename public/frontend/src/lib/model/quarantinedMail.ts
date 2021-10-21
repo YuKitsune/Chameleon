@@ -1,4 +1,4 @@
-import type { AliasInfo } from '$lib/alias';
+import type { AliasInfo } from '$lib/model/alias';
 
 export default interface QuarantinedMail {
 	Sender: string;

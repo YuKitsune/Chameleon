@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Alias from './alias';
-	import AddIcon from '$lib/icons/AddIcon.svelte';
-	import LockIcon from '$lib/icons/LockIcon.svelte';
+	import Alias from '../model/alias';
+	import AddIcon from '$lib/components/icons/AddIcon.svelte';
+	import LockIcon from '$lib/components/icons/LockIcon.svelte';
 	export let alias: Alias | undefined = undefined;
 	export let isTemplate = false;
 </script>

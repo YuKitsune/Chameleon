@@ -1,5 +1,5 @@
 <script>
-	import Section from '$lib/Section.svelte';
+	import Section from '$lib/components/Section.svelte';
 </script>
 
 <div class='flex flex-row grid grid-cols-2 gap-4'>

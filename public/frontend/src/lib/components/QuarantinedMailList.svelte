@@ -1,6 +1,6 @@
 <script lang='ts'>
-	import QuarantinedMail from '$lib/quarantinedMail';
-	import QuarantinedMailListItem from '$lib/QuarantinedMailListItem.svelte';
+	import QuarantinedMail from '$lib/model/quarantinedMail';
+	import QuarantinedMailListItem from '$lib/components/QuarantinedMailListItem.svelte';
 
 	export let quarantinedMail: QuarantinedMail[] = [];
 </script>

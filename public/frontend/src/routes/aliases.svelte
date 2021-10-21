@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AliasList from '$lib/AliasList.svelte';
+	import AliasList from '$lib/components/AliasList.svelte';
 
 	let dummyData = [
 		{Name:"Facebook", Address: "john.doe@chameleon.io", WhitelistPattern: ".*@facebook\\.com", LastUsed: 5, EncryptionEnabled: true},

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Navbar from '$lib/header/Navbar.svelte';
+	import Navbar from '$lib/components/header/Navbar.svelte';
 	import '../tailwind.css'
 </script>
 

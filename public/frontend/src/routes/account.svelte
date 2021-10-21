@@ -1,7 +1,7 @@
 <script>
-	import TextInput from '$lib/TextInput.svelte';
-	import {TextSize} from '$lib/TextSize';
-	import Section from '$lib/Section.svelte';
+	import TextInput from '$lib/components/TextInput.svelte';
+	import {TextSize} from '$lib/model/TextSize';
+	import Section from '$lib/components/Section.svelte';
 </script>
 
 <div class='flex flex-row grid grid-cols-2 gap-4'>
