@@ -1,0 +1,12 @@
+
+.link {
+    @apply px-2 py-1 rounded-md cursor-pointer inline-flex;
+}
+
+.link:hover {
+    @apply bg-green-600 text-white;
+}
+
+.link.active {
+    @apply bg-green-600;
+}

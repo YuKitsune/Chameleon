@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+
+  .one-column-grid {
+      @apply flex flex-col gap-2
+  }
+
+  .two-column-grid {
+      @apply flex flex-col lg:flex-row lg:grid lg:grid-cols-2 gap-2;
+  }
+}
