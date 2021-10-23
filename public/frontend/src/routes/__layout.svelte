@@ -1,12 +1,13 @@
 <script lang="ts">
 	import Navbar from '$lib/components/header/Navbar.svelte';
 	import '../tailwind.css'
+	import '../app.css'
 </script>
 
 <div class='flex flex-col h-screen overflow-hidden bg-gray-100'>
 	<Navbar class='w-full'/>
 
-	<div class='content'>
+	<div class='content px-6 lg:px-24'>
 		<main class='child'>
 			<slot/>
 		</main>
@@ -21,7 +22,7 @@
 
 <style>
 	.content {
-			@apply flex flex-col flex-grow items-center justify-between px-24 p-4 overflow-y-scroll;
+			@apply flex flex-col flex-grow items-center justify-between p-4 overflow-y-scroll;
 	}
 
 	.child {
