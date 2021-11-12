@@ -1,6 +1,6 @@
 
 .content {
-  @apply flex flex-col flex-grow items-center justify-between p-4 overflow-y-scroll;
+  @apply flex flex-col flex-grow items-center justify-between px-64 py-8 overflow-y-scroll;
 }
 
 .child {

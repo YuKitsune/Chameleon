@@ -4,8 +4,9 @@ import Navbar from './components/header/Navbar';
 import Aliases from './components/pages/aliases';
 import QuarantinedMail from './components/pages/quarantinedMail';
 import Account from './components/pages/account';
-import Settings from './components/pages/settings';
 import './App.css';
+import Billing from './components/pages/billing';
+import Preferences from './components/pages/preferences';
 
 function App() {
   return (
@@ -26,15 +27,18 @@ function App() {
               <Route exact path="/account">
                 <Account />
               </Route>
-              <Route exact path="/settings">
-                <Settings />
+              <Route exact path="/preferences">
+                <Preferences />
+              </Route>
+              <Route exact path="/billing">
+                <Billing />
               </Route>
             </Switch>
 
           </main>
 
           <footer className='footer'>
-            <p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
+            <p>Footer eh?</p>
           </footer>
 
         </div>

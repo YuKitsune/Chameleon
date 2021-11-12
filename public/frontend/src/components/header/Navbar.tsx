@@ -8,7 +8,7 @@ import '../DropdownItem.css';
 
 const Navbar = () => {
     return (
-        <div className="items-center justify-between flex bg-green-500 text-white bg-opacity-90 px-24 py-2 shadow-2xl">
+        <div className="items-center justify-between flex bg-green-500 text-white bg-opacity-90 px-64 py-2 shadow-2xl">
 
             {/* Left */}
             <div className="inline-flex items-center">
@@ -36,7 +36,10 @@ const Navbar = () => {
                         <Link path='/account'>My Account</Link>
                     </DropdownItem>
                     <DropdownItem>
-                        <Link path='/settings'>Settings</Link>
+                        <Link path='/billing'>Billing</Link>
+                    </DropdownItem>
+                    <DropdownItem>
+                        <Link path='/preferences'>Preferences</Link>
                     </DropdownItem>
                     <DropdownItem>
                         <Link path='/logout'>Log Out</Link>
