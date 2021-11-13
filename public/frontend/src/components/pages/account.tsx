@@ -55,15 +55,6 @@ const Account = () => {
                             </Section>
                         </div>
                     </Section>
-
-                    <Section header='Sessions' headerSize={TextSize.Large}>
-                        🚧 Todo 🚧
-                    </Section>
-
-                    <Section header='Events' headerSize={TextSize.Large}>
-                        🚧 Todo 🚧
-                    </Section>
-
                 </div>
             </Section>
 
