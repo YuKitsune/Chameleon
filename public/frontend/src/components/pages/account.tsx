@@ -3,6 +3,8 @@ import { TextSize } from '../../model/TextSize';
 import Section from '../section';
 import TextInput from '../textInput';
 import Button from '../button';
+import { AsyncNoOp } from '../NoOp';
+import CheckIcon from '../icons/CheckIcon';
 
 const Account = () => {
 
@@ -30,7 +32,28 @@ const Account = () => {
                     </Section>
 
                     <Section header='Two Factor Authentication' headerSize={TextSize.Large}>
-                        🚧 Todo 🚧
+                        <div className={"two-column-grid"}>
+                            <Section header='Authenticator App' headerSize={TextSize.NotLarge}>
+                                <div className={"flex flex-row justify-between gap-1 items-center"}>
+                                    <span className={"inline-flex items-center"}>
+                                        Configured! <CheckIcon className={"ml-1 h-4 w-4 text-green-500"}/>
+                                    </span>
+                                    <Button onClick={AsyncNoOp} className={"bg-gray-300"}>
+                                        Edit
+                                    </Button>
+                                </div>
+                            </Section>
+                            <Section header='Security Keys' headerSize={TextSize.NotLarge}>
+                                <div className={"flex flex-row justify-between gap-1 items-center"}>
+                                    <span className={"inline-flex items-center"}>
+                                        2 security keys
+                                    </span>
+                                    <Button onClick={AsyncNoOp} className={"bg-gray-300"}>
+                                        Edit
+                                    </Button>
+                                </div>
+                            </Section>
+                        </div>
                     </Section>
 
                     <Section header='Sessions' headerSize={TextSize.Large}>
