@@ -38,7 +38,7 @@ const Account = () => {
                                     <span className={"inline-flex items-center"}>
                                         Configured! <CheckIcon className={"ml-1 h-4 w-4 text-green-500"}/>
                                     </span>
-                                    <Button onClick={AsyncNoOp} className={"bg-gray-300"}>
+                                    <Button onClickAsync={AsyncNoOp} className={"bg-gray-300"}>
                                         Edit
                                     </Button>
                                 </div>
@@ -48,7 +48,7 @@ const Account = () => {
                                     <span className={"inline-flex items-center"}>
                                         2 security keys
                                     </span>
-                                    <Button onClick={AsyncNoOp} className={"bg-gray-300"}>
+                                    <Button onClickAsync={AsyncNoOp} className={"bg-gray-300"}>
                                         Edit
                                     </Button>
                                 </div>

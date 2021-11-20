@@ -30,7 +30,7 @@ const CopyToClipboardButton = (props: CopyToClipboardProps) => {
 	);
 
 	return (
-		<Button onClick={cb}>
+		<Button onClickAsync={cb}>
 
 			{/* Inactive button */}
 			{!isActive && <ClipboardIcon className={"h-4, w-4"} />}
